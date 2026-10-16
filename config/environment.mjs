@@ -4,8 +4,9 @@ export function resolveDeployment(env = {}) {
   if (!['production', 'staging'].includes(environment)) {
     throw new Error('DEPLOY_ENV must be production or staging');
   }
-  if (env.CF_PAGES === '1' && (environment !== 'staging' || env.CF_PAGES_BRANCH !== 'development')) {
-    throw new Error('Cloudflare Pages must build development with DEPLOY_ENV=staging');
+  const expectedBranch = environment === 'staging' ? 'development' : 'main';
+  if (env.CF_PAGES === '1' && (env.DEPLOY_ENV !== environment || env.CF_PAGES_BRANCH !== expectedBranch)) {
+    throw new Error('Cloudflare Pages requires explicit DEPLOY_ENV: development + staging or main + production');
   }
   return {
     environment,

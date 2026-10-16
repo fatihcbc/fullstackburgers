@@ -1,12 +1,13 @@
 ---
 import { copy, locales, pages, pageUrl, type Locale, type Page } from '../i18n';
 import BrandLogo from './BrandLogo.astro';
+import { deployment } from '../config/site';
 interface Props { locale: Locale; page: Page; }
 const { locale, page } = Astro.props;
 const t = copy[locale];
 ---
 <a class="skip-link" href="#main">{t.skip}</a>
-<div class="preview-note">{t.preview}</div>
+{deployment.staging && <div class="preview-note">{t.preview}</div>}
 <header class="site-header wrapper">
   <a class="brand-home" href={pageUrl(locale, 'home')} aria-label={locale === 'nl' ? 'Fullstack Burgers — homepagina' : 'Fullstack Burgers — homepage'}><BrandLogo /></a>
   <nav aria-label={locale === 'nl' ? 'Hoofdnavigatie' : 'Main navigation'}>

@@ -27,7 +27,7 @@ npm run dev
 
 The portable runtime is local tooling, not part of the tracked project. Other checkouts should install a supported Node version and use npm ci.
 
-Production uses the existing GitHub Pages configuration: main, repository root. The root CNAME and public/CNAME remain www.fullstackburgers.nl. After verifying staging, merge development into main and publish the verified production dist contents at the repository root with .nojekyll. Commit these publication files only on main; they must be regenerated for each production release. Staging continues to build development directly in Cloudflare Pages. Hosting settings do not need to change.
+Production currently runs on GitHub Pages from main's repository root. Retain its generated files, .nojekyll, root CNAME and public/CNAME unchanged as the rollback site. The approved target is a separate Cloudflare Pages production project building Astro source from main into dist; beta continues building development. No new build output needs to be copied into main's root. Project creation, pushes, DNS cutover and GitHub Pages retirement require separate authorization; this preparation does not deploy anything.
 
 ## Brand identity
 
@@ -57,13 +57,13 @@ Review the isolated prototype at `/design/retro/` (Dutch) or `/en/design/retro/`
 
 Both prototype routes always emit `noindex,nofollow`, including production builds, and remain outside the production sitemap. Staging continues to apply its existing environment-wide headers. `npm run verify:all` checks both languages, optimized image assets, links, and indexing policy in both environments.
 
-## Permanent staging on Cloudflare Pages
+## Cloudflare Pages deployment policy
 
-The shared policy in config/environment.mjs uses DEPLOY_ENV=production (the default) or DEPLOY_ENV=staging. It sets both Astro's site URL and application SEO URLs. Staging uses https://beta.fullstackburgers.nl; production retains https://www.fullstackburgers.nl. Configure DEPLOY_ENV as a process/build environment variable, not in a local .env file. Astro's production build mode does not identify the hosting environment.
+The shared policy in config/environment.mjs uses DEPLOY_ENV=production (the local default) or DEPLOY_ENV=staging. Cloudflare builds require an explicit DEPLOY_ENV and accept only development + staging or main + production. Missing environments, missing/unknown branches and mismatched combinations fail. This policy sets both Astro's site URL and application SEO URLs. Staging uses https://beta.fullstackburgers.nl; production retains https://www.fullstackburgers.nl. Configure DEPLOY_ENV as a process/build environment variable, not in a local .env file. Astro's production build mode does not identify the hosting environment. The repository .node-version pins Node 22.23.3; set NODE_VERSION=22.23.3 in each Pages project as well.
 
-Staging adds noindex,nofollow to every HTML page, emits a Cloudflare _headers rule for all responses, omits the sitemap advertisement from robots.txt, and emits an empty sitemap. Crawling remains allowed so search engines can read noindex. The build removes only the output CNAME in staging; both source CNAME files and the production output CNAME are preserved. Production emits no staging _headers file and keeps its existing root/404 indexing policy and ten-page sitemap.
+Staging adds noindex,nofollow to every HTML page, emits a Cloudflare _headers rule for all responses, omits the sitemap advertisement from robots.txt, and emits an empty sitemap. Crawling remains allowed so search engines can read noindex. The build removes only the output CNAME in staging; both source CNAME files and the production output CNAME are preserved. Header/footer staging indicators render only in staging. Production emits no staging _headers file, keeps public pages including the root indexable, excludes 404/prototypes from indexing, and lists eight localized canonical URLs in its sitemap.
 
-Run npm run verify for the selected environment, or npm run verify:all to check both staging and production plus invalid Cloudflare environment/branch guards. The latter leaves a production build in dist. No new dependencies are needed.
+Run npm run verify for the selected environment, or npm run verify:all to check both staging and production using their actual Cloudflare branch/environment pairs plus the invalid configuration matrix. The latter leaves a production build in dist. No new dependencies are needed.
 
 ~~~powershell
 $env:DEPLOY_ENV = 'staging'
@@ -73,13 +73,36 @@ npm run verify
 npm run verify:all
 ~~~
 
-Manual setup, after deployment authorization:
+Manual dashboard setup, only after deployment authorization:
 
-1. Create a separate Cloudflare **Pages** project using the existing fatihcbc/fullstackburgers GitHub repository. Authorize the Cloudflare GitHub application for this repository only. Project creation can trigger the first deployment.
-2. Set this project's production branch to development, enable its automatic deployments, and disable preview-branch deployments. This Cloudflare label does not refer to the live GitHub Pages website. Cloudflare builds fail unless CF_PAGES_BRANCH=development and DEPLOY_ENV=staging.
-3. Select Astro, repository root, build command npm run verify, output directory dist, and environment variables DEPLOY_ENV=staging and NODE_VERSION=22.23.3. Cloudflare supplies CF_PAGES and CF_PAGES_BRANCH automatically. No adapter, Wrangler configuration, GitHub Actions workflow, or deployment token is required.
-4. Add beta.fullstackburgers.nl under the project's Custom domains. Then add only a beta CNAME at the existing DNS provider, pointing to the assigned project.pages.dev hostname. Keep nameservers and all production DNS records unchanged. Confirm domain activation and HTTPS in Cloudflare.
-5. Check the root, eight localized pages, language links, images/styles, direct navigation, real 404 status, beta metadata URLs, and noindex headers on both beta and Pages URLs. Compare production DNS, Pages settings, deployed commit, content/assets, redirects, and SEO against the pre-deployment baseline. Confirm the next development push automatically updates beta.
+| Setting | Existing staging project (retain) | New production project |
+| --- | --- | --- |
+| Project name | fullstackburgers-beta | fullstackburgers-production |
+| Git provider/repository | GitHub: fatihcbc/fullstackburgers | GitHub: fatihcbc/fullstackburgers |
+| Production branch | development | main |
+| Automatic production-branch deployments | Enabled | Enabled |
+| Preview branch deployments | None / disabled | None / disabled |
+| Framework preset | Astro | Astro |
+| Root directory | Repository root (leave blank) | Repository root (leave blank) |
+| Build command | npm run verify | npm run verify |
+| Build output directory | dist | dist |
+| Production environment: DEPLOY_ENV | staging | production |
+| Production environment: NODE_VERSION | 22.23.3 | 22.23.3 |
+| Custom domain | beta.fullstackburgers.nl | www.fullstackburgers.nl |
+
+1. Preserve the existing beta project. Its Cloudflare "Production" settings refer to development, so DEPLOY_ENV=staging belongs in that project's Production environment, not only Preview.
+2. First merge the approved guard/SEO source changes into main using the rollback-preserving procedure below. Creating the new project against the old main would fail its existing staging-only guard.
+3. In Cloudflare Workers & Pages, choose Pages > Connect to Git / Import an existing Git repository. Use the existing GitHub app connection, granting access only to fatihcbc/fullstackburgers if authorization is required. Enter the production column above before Save and Deploy. Project creation can immediately deploy and is not part of local preparation. Cloudflare supplies CF_PAGES and CF_PAGES_BRANCH; do not override them. Leave dependency installation enabled so the existing npm lockfile is used. No adapter, Wrangler config, GitHub Actions deployment workflow or deployment token is needed.
+4. After a successful production build, add www.fullstackburgers.nl under the new project's Custom domains. Do not attach beta or the apex to this project. Do not switch www's STRATO CNAME yet: first review domain validation and certificate readiness, test the assigned pages.dev deployment with production canonicals, and obtain cutover approval. The default production pages.dev hostname should receive hostname-specific noindex protection or a custom-domain redirect before public promotion; do not apply global production noindex headers. This separate hostname handling is not implemented in the current preparation.
+5. For the later approved cutover, change only www's CNAME from fatihcbc.github.io to the actual hostname assigned to fullstackburgers-production (expected fullstackburgers-production.pages.dev; confirm in the dashboard). Keep beta's CNAME to fullstackburgers-beta.pages.dev, nameservers, apex and all mail records unchanged. DNS remains at STRATO. Verify HTTPS and all existing paths on www and recheck beta's meta/header protections. Certificate activation may depend on DNS validation; do not promise zero downtime without confirming the validation sequence.
+
+Branch and rollback procedure, after commit/push approval:
+
+1. Commit only the approved source, deployment policy, verification, Node pin and documentation changes on development. Push development and verify beta before merging.
+2. Record the existing main rollback SHA (currently 8228aab9220460cbdba06faf615ed330920acaa6), save its generated-file manifest/hashes, and refresh both remote refs. Main contains the same baseline Astro source as development plus published GitHub Pages files and different deployment documentation.
+3. Merge development into main with a normal reviewed merge, not a branch reset, force push or replacement of main's tree. Resolve any README conflict by retaining these new deployment instructions and the explicit GitHub Pages rollback policy.
+4. Before pushing main, compare all existing generated root files with the saved main baseline byte-for-byte: index.html, 404.html, nl/, en/, design/, _astro/, media/, fonts/, icons/, favicon.ico, robots.txt, sitemap.xml, .nojekyll and CNAME. Preserve all of them. Do not run a dist-to-root copy or delete any publication files. Source changes may trigger a GitHub Pages rebuild on push, but its static output should remain the retained version. Cloudflare independently builds src/ into dist.
+5. Keep GitHub Pages hosting/settings and its custom domain available throughout cutover and the agreed rollback window. A DNS rollback restores www CNAME fatihcbc.github.io; it is not instantaneous because of caching. Removing old publication files or retiring GitHub Pages is a separate later task.
 
 No Cloudflare project creation or DNS change is performed by these scripts. Indexing directives are not authentication; beta is intended to be publicly accessible but excluded from search results.
 
@@ -109,7 +132,7 @@ scripts/verify-build.mjs # Post-build acceptance checks
 | About | /nl/over-ons/ | /en/about/ |
 | Locations & Events | /nl/locaties-evenementen/ | /en/locations-events/ |
 
-Dutch is the provisional default. The root serves a useful Dutch homepage, canonicalized to /nl/ and marked noindex to avoid a duplicate index entry. No automatic browser-language detection. Language links preserve the corresponding page. Canonicals, reciprocal hreflang (including x-default) and sitemap all share the route map. At launch, a host-level redirect from / to /nl/ can replace the root alias if supported.
+Dutch is the default. The root serves an accessible Dutch homepage, canonicalized to /nl/, without a production noindex directive. The existing static GitHub Pages root publishing setup cannot provide a custom HTTP 301 for this path through Astro output alone; no JavaScript or meta-refresh redirect is used. A future host-level redirect requires separate approval. Language links preserve the corresponding page. Canonicals, reciprocal hreflang (including x-default) and sitemap all share the route map, with /nl/ remaining the only Dutch homepage canonical. Staging protects both root and localized pages with noindex,nofollow.
 
 ## Markdown editing
 
@@ -139,7 +162,7 @@ Shared color and font tokens live in src/styles/brand.css; layout tokens remain 
 
 ## SEO and launch work
 
-The shared layout supplies unique localized titles/descriptions, canonical URLs, Open Graph fields, language alternatives and minimal FoodEstablishment JSON-LD. Only the business name and existing domain are populated. Add verified address/service model, telephone, hours, social profiles and appropriate business subtype before validating rich-result eligibility. No ratings, opening hours or address are fabricated.
+The shared layout supplies unique localized titles/descriptions, canonical URLs, Open Graph fields, language alternatives and FoodEstablishment JSON-LD. The business name, stable #business identifier, environment URL, smash burger cuisine and Almere service area are retained. Confirmed logo, truck-2 image and localized hasMenu URLs use absolute environment URLs; production never includes beta URLs. No permanent address, telephone, hours, social profiles or ratings are fabricated. Without a confirmed physical business address, this markup does not claim eligibility for Google's LocalBusiness rich results. The locations page describes only the confirmed Sunday/Monday stops and keeps their exact supplied Maps links.
 
 In production builds, the sitemap lists the eight canonical language pages and robots.txt references it. Staging receives the environment-wide noindex policy described above and an empty, unadvertised sitemap. These source changes do not change the currently deployed production site.
 
