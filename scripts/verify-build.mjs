@@ -212,12 +212,39 @@ for (const [index, file] of prototypePaths.entries()) {
   }
   assert(!/<script\b/.test(html), 'Prototype should need no client JavaScript');
 }
+const headersFile = await readFile(join(dist, '_headers'), 'utf8');
+// Check the emitted rules using Cloudflare's documented placeholder/splat semantics.
+// This models only the syntax used here; live edge behavior still needs deployment QA.
+const headerRules = headersFile.trim().split(/\n\s*\n/).map(block => {
+  const [pattern, header] = block.split('\n');
+  assert.equal(header.trim(), 'X-Robots-Tag: noindex, nofollow');
+  const absolute = pattern.startsWith('https://');
+  const target = absolute ? pattern.slice('https://'.length) : pattern;
+  const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = new RegExp('^' + escaped.replace(/:[A-Za-z]\w*/g, '[^./]+').replaceAll('\\*', '.*') + '$');
+  return { pattern, absolute, match };
+});
+const headerFor = input => {
+  const url = new URL(input);
+  return headerRules.some(rule => rule.match.test((rule.absolute ? url.hostname : '') + url.pathname)) ? 'noindex, nofollow' : undefined;
+};
+const pagePaths = files.filter(file => file.endsWith('.html')).map(file => '/' + file.slice(dist.length + 1).replaceAll('\\', '/'));
+const testPaths = ['/', '/nl/', '/en/menu/', '/missing-page/', '/robots.txt', '/sitemap.xml', '/icons/favicon.svg', ...pagePaths];
+const pagesHosts = ['fullstackburgers-production.pages.dev', 'a1b2c3d4.fullstackburgers-production.pages.dev', 'main.fullstackburgers-production.pages.dev', 'feature-menu.fullstackburgers-production.pages.dev'];
+for (const hostname of pagesHosts) for (const path of testPaths) for (const scheme of ['http', 'https']) {
+  assert.equal(headerFor(scheme + '://' + hostname + path), 'noindex, nofollow', 'Pages hostname not protected: ' + hostname + path);
+}
+for (const hostname of ['www.fullstackburgers.nl', 'fullstackburgers.nl', 'www.fullstackburgers.nl.pages.dev.example.com', 'fullstackburgers-production.pages.dev.example.com']) {
+  for (const path of testPaths) assert.equal(headerFor('https://' + hostname + path), deployment.staging ? 'noindex, nofollow' : undefined, 'Unexpected public-host header: ' + hostname + path);
+}
+assert.equal(headerFor('https://www.fullstackburgers.nl/?next=https://fullstackburgers-production.pages.dev/'), deployment.staging ? 'noindex, nofollow' : undefined, 'Query strings must not select a Pages hostname rule');
 if (deployment.staging) {
-  assert.equal(await readFile(join(dist, '_headers'), 'utf8'), '/*\n  X-Robots-Tag: noindex, nofollow\n');
+  assert.equal(headersFile, '/*\n  X-Robots-Tag: noindex, nofollow\n');
+  assert.equal(headerFor('https://beta.fullstackburgers.nl/nl/'), 'noindex, nofollow');
   await assert.rejects(access(join(dist, 'CNAME')));
 } else {
   assert.equal((await readFile(join(dist, 'CNAME'), 'utf8')).trim(), 'www.fullstackburgers.nl');
-  await assert.rejects(access(join(dist, '_headers')));
+  assert.deepEqual(headerRules.map(rule => rule.pattern), ['https://:project.pages.dev/*', 'https://:version.:project.pages.dev/*'], 'Production must have only hostname-specific Pages rules');
   for (const loc of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)) assert(loc[1].startsWith(deployment.url + '/'));
 }
 console.log('Verified ' + deployment.environment + ': 8 localized pages, root/404 and 2 prototype pages; official menu/prices, locations/maps, original images/mascot, removed Ingredients routes, fonts, SEO, noindex, sitemap, robots, headers and CNAME.');
