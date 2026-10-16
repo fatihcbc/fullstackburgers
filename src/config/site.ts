@@ -8,5 +8,5 @@ export const site = {
   business: { '@type': 'FoodEstablishment', servesCuisine: 'Smash burgers', areaServed: { '@type': 'City', name: 'Almere' } },
 };
 export const assets = {
-  socialCard: '/media/truck-1.jpeg',
+  socialCard: '/media/truck-2.png',
 };

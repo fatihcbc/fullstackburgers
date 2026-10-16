@@ -39,7 +39,7 @@ Roboto v51 is self-hosted as official Google Fonts WOFF2 files under `public/fon
 
 ## Confirmed business content
 
-The homepage and About page describe Fullstack Burgers as an Almere-based smash burger food truck. The original `public/media/truck-1.jpeg` supplies responsive WebP/JPEG photography without cropping or artwork changes. The original `public/media/posters-01.jpg` is displayed on both menu pages, with an accessible HTML price list and a link to the full-size original. Poster text such as “Grand Opening Specials” is preserved as artwork; no promotion dates or additional dietary claims have been added to website copy.
+The homepage and About page describe Fullstack Burgers as an Almere-based smash burger food truck. The original `public/media/truck-2.png` supplies responsive WebP/JPEG photography without cropping or artwork changes. `public/media/truck-1.jpeg` remains as an unused backup. The original `public/media/posters-01.jpg` is displayed on both menu pages, with an accessible HTML price list and a link to the full-size original. Poster text such as “Grand Opening Specials” is preserved as artwork; no promotion dates or additional dietary claims have been added to website copy.
 
 Published burger records are `single-smash.md`, `double-smash.md` and `triple-smash.md` in each language. Opening burger/combo prices in cents are 795/1095, 995/1295 and 1195/1495 respectively. Future standard burger/combo prices are 895/1295, 1095/1495 and 1295/1695. `OpeningPricesNotice.astro` displays the localized OPENINGSPRIJZEN / OPENING PRICES badge and explains that standard prices apply later. `BurgerGrid.astro` makes opening prices prominent, with smaller gray future standard prices and no strikethrough. This shared presentation appears on the menu, homepage and retro prototype in both languages. The original poster is unchanged. No promotion end date is assumed.
 
@@ -53,7 +53,7 @@ Favicons use Hakan’s original mascot face, isolated using its existing SVG sil
 
 Review the isolated prototype at `/design/retro/` (Dutch) or `/en/design/retro/` (English). The existing homepages and route map remain unchanged. The language switch stays within the prototype; content links open the existing localized pages.
 
-`src/components/RetroPrototype.astro` shares the markup and localized content. `src/styles/retro.css` uses the shared brand colors and self-hosted Roboto. The full truck photograph in `public/media/truck-1.jpeg` is rendered without cropping and optimized by Astro into responsive WebP/JPEG variants. No client JavaScript or additional dependencies are used.
+`src/components/RetroPrototype.astro` shares the markup and localized content. `src/styles/retro.css` uses the shared brand colors and self-hosted Roboto. The full truck photograph in `public/media/truck-2.png` is rendered without cropping and optimized by Astro into responsive WebP/JPEG variants. No client JavaScript or additional dependencies are used.
 
 Both prototype routes always emit `noindex,nofollow`, including production builds, and remain outside the production sitemap. Staging continues to apply its existing environment-wide headers. `npm run verify:all` checks both languages, optimized image assets, links, and indexing policy in both environments.
 

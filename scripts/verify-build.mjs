@@ -47,6 +47,7 @@ assert.equal(pages.length, 8, 'Expected four pages in both languages after Ingre
 const titles = new Set(); const descriptions = new Set();
 for (const file of pages) {
   const html = await readFile(file, 'utf8');
+  assert(!html.includes('truck-1'), 'Backup truck image must not be referenced by website pages');
   const title = html.match(/<title>(.*?)<\/title>/s)?.[1];
   assert(title && !titles.has(title), 'Missing or duplicate title: ' + file); titles.add(title);
   const description = html.match(/<meta name="description" content="([^"]+)"/s)?.[1];
@@ -74,6 +75,8 @@ assert.equal((await readFile('CNAME', 'utf8')).trim(), 'www.fullstackburgers.nl'
 assert.equal((await readFile('public/CNAME', 'utf8')).trim(), 'www.fullstackburgers.nl');
 for (const file of files.filter(f => f.endsWith('.html'))) {
   const html = await readFile(file, 'utf8');
+  assert(!html.includes('truck-1'), 'Backup truck image must not be displayed');
+  assert(!html.includes('<figcaption'), 'Truck photo captions must remain removed');
   const isRoot = file === join(dist, 'index.html');
   const is404 = file === join(dist, '404.html');
   for (const icon of ['/favicon.ico', '/icons/favicon.svg', '/icons/favicon-32.png', '/icons/apple-touch-icon.png']) assert(html.includes('href="' + icon + '"'), 'Missing favicon reference: ' + file);
@@ -106,7 +109,7 @@ for (const locale of ['nl', 'en']) {
   const locationPath = locale === 'nl' ? 'locaties-evenementen' : 'locations-events';
   const locations = await readFile(join(dist, locale, locationPath, 'index.html'), 'utf8');
   assert(home.includes('/media/pixel/10x10%20cm%20drukwerk.svg'), 'Missing original mascot');
-  assert(home.includes('truck-1.') && home.includes('type="image/webp"') && home.includes('fetchpriority="high"'), 'Missing optimized original truck hero');
+  assert(home.includes('truck-2.') && home.includes('type="image/webp"') && home.includes('fetchpriority="high"'), 'Missing optimized original truck hero');
   assert(home.includes(locale === 'nl' ? 'Smashburgers' : 'Almere-based smash burger food truck'));
   const prototype = await readFile(prototypePaths[locale === 'nl' ? 0 : 1], 'utf8');
   const currency = cents => new Intl.NumberFormat(locale === 'nl' ? 'nl-NL' : 'en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
@@ -151,7 +154,7 @@ for (const locale of ['nl', 'en']) {
   }
   assert(menu.includes(locale === 'nl' ? 'burger, friet en frisdrank' : 'burger, fries and a soft drink'), 'Missing combo contents');
 }
-for (const relative of ['media/truck-1.jpeg', 'media/posters-01.jpg', 'media/pixel/10x10 cm drukwerk.svg', 'media/logo/10x10 cm logo drukwerk.svg']) {
+for (const relative of ['media/truck-1.jpeg', 'media/truck-2.png', 'media/posters-01.jpg', 'media/pixel/10x10 cm drukwerk.svg', 'media/logo/10x10 cm logo drukwerk.svg']) {
   assert.deepEqual(await readFile(join(dist, relative)), await readFile(join('public', relative)), 'Original asset changed in output');
 }
 for (const [index, file] of prototypePaths.entries()) {

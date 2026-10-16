@@ -39,7 +39,6 @@ export const copy = {
     locationsIntro: 'Dit zijn onze vaste locaties in Almere. Bekijk hieronder waar je onze foodtruck op zondag en maandag vindt.',
     locationsTitle: 'Hier vind je ons', maps: 'Route bekijken', newTab: 'opent in een nieuw tabblad',
     truckAlt: 'De originele Fullstack Burgers-foodtruck met gele belettering en pixelpatronen, volledig in beeld.',
-    truckCaption: 'Fullstack Burgers · foodtruck uit Almere',
   },
   en: {
     nav: { home: 'Home', menu: 'Menu', about: 'About', locations: 'Locations' },
@@ -72,6 +71,5 @@ export const copy = {
     locationsIntro: 'These are our regular locations in Almere. Find out where to visit our food truck on Sundays and Mondays below.',
     locationsTitle: 'Where to find us', maps: 'Get directions', newTab: 'opens in a new tab',
     truckAlt: 'The original Fullstack Burgers food truck with yellow lettering and pixel patterns, shown in full.',
-    truckCaption: 'Fullstack Burgers · Almere-based food truck',
   },
 };

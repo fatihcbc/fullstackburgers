@@ -44,7 +44,6 @@
   .hero-brand-accent { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
   .truck-photo { min-width: 0; }
   .truck-photo img { display: block; width: 100%; height: auto; }
-  .truck-photo figcaption { margin-top: .75rem; color: var(--color-muted); font-size: .8rem; }
   .hero h1 { margin-block: 1rem 1.5rem; font-size: clamp(2.25rem, 5.2vw, 5.2rem); }
   .hero h1 span { display: block; }
   .intro { max-width: 36rem; font-size: 1.125rem; color: var(--color-muted); }

@@ -54,7 +54,6 @@ body.retro { margin: 0; font: 1rem/1.65 var(--retro-body); }
 .pixel-corner { position: absolute; width: 10px; height: 10px; background: var(--retro-yellow); pointer-events: none; }
 .pixel-corner--top { top: -5px; left: -5px; box-shadow: 10px 0 var(--retro-yellow), 0 10px var(--retro-yellow), 20px 10px var(--retro-yellow), 10px 20px var(--retro-yellow), 0 30px var(--retro-yellow); }
 .pixel-corner--bottom { bottom: -5px; right: -5px; box-shadow: -10px 0 var(--retro-yellow), 0 -10px var(--retro-yellow), -20px -10px var(--retro-yellow), -10px -20px var(--retro-yellow), 0 -30px var(--retro-yellow); }
-.retro-truck figcaption { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1rem; color: var(--retro-gray); font-size: .75rem; }
 .retro-checker { display: inline-block; flex-shrink: 0; width: 56px; height: 16px; background: conic-gradient(var(--retro-yellow) 25%, transparent 0 50%, var(--retro-yellow) 0 75%, transparent 0) 0 0 / 16px 16px; }
 .retro-stop { background: var(--retro-yellow); color: var(--retro-black); }
 .retro-stop-inner { display: grid; gap: 1.2rem; padding-block: 1.7rem; }

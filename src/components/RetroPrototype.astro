@@ -1,6 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
-import truck from '../../public/media/truck-1.jpeg';
+import truck from '../../public/media/truck-2.png';
 import { copy, pageUrl, type Locale } from '../i18n';
 import { site } from '../config/site';
 import BrandLogo from './BrandLogo.astro';
@@ -21,7 +21,7 @@ const text = nl ? {
   preview: 'Designprototype · in ontwikkeling', back: 'Huidige website',
   eyebrow: 'Fullstack Burgers / Almere', first: 'Smashburgers.', second: 'Uit', third: 'Almere.',
   truckAlt: 'De donkergrijze Fullstack Burgers foodtruck met gele belettering en pixelpatronen, volledig in beeld.',
-  truckCaption: 'Onze foodtruck. Onze stijl.', truckLabel: 'Van de straat. Voor de trek.',
+  truckLabel: 'Van de straat. Voor de trek.',
   menuLabel: 'Ons menu', sample: 'Bekijk het volledige menu',
   menuNote: 'Single · Double · Triple',
   storyLink: 'Meer over Fullstack Burgers',
@@ -30,7 +30,7 @@ const text = nl ? {
   preview: 'Design prototype · in development', back: 'Current website',
   eyebrow: 'Fullstack Burgers / Almere', first: 'Smash burgers.', second: 'From', third: 'Almere.',
   truckAlt: 'The dark grey Fullstack Burgers food truck with yellow lettering and pixel patterns, shown in full.',
-  truckCaption: 'Our food truck. Our style.', truckLabel: 'Street food. Big appetite.',
+  truckLabel: 'Street food. Big appetite.',
   menuLabel: 'Our menu', sample: 'Explore the full menu',
   menuNote: 'Single · Double · Triple',
   storyLink: 'More about Fullstack Burgers',
@@ -55,7 +55,7 @@ const text = nl ? {
     <meta property="og:description" content={t.descriptions.home} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL('/media/truck-1.jpeg', site.url)} />
+    <meta property="og:image" content={new URL('/media/truck-2.png', site.url)} />
     <meta property="og:image:alt" content={text.truckAlt} />
     <FaviconHead />
   </head>
@@ -88,7 +88,6 @@ const text = nl ? {
             <span class="pixel-corner pixel-corner--top" aria-hidden="true"></span>
             <span class="pixel-corner pixel-corner--bottom" aria-hidden="true"></span>
           </div>
-          <figcaption><span>{text.truckCaption}</span><span class="retro-checker" aria-hidden="true"></span></figcaption>
         </figure>
       </section>
       <section class="retro-stop" aria-labelledby="stop-title"><div class="retro-wrap retro-stop-inner">
