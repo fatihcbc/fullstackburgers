@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
 import { deployment } from '../config/site';
+import FontPreload from '../components/FontPreload.astro';
 ---
-<!doctype html><html lang="nl"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="robots" content={deployment.staging ? "noindex,nofollow" : "noindex"} /><title>404 | Fullstack Burgers</title></head><body><main class="wrapper section"><p class="eyebrow">404</p><h1>Even de weg kwijt?<br /><span lang="en">Lost your way?</span></h1><p><a class="button" href="/nl/">Naar home</a> <a class="text-link" href="/en/" lang="en">Back to home →</a></p></main></body></html>
+<!doctype html><html lang="nl"><head><meta charset="utf-8" /><FontPreload /><meta name="viewport" content="width=device-width" /><meta name="robots" content={deployment.staging ? "noindex,nofollow" : "noindex"} /><title>404 | Fullstack Burgers</title></head><body><main class="wrapper section"><p class="eyebrow">404</p><h1>Even de weg kwijt?<br /><span lang="en">Lost your way?</span></h1><p><a class="button" href="/nl/">Naar home</a> <a class="text-link" href="/en/" lang="en">Back to home →</a></p></main></body></html>

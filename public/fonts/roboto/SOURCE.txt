@@ -1,0 +1,19 @@
+Roboto v51 from Google Fonts
+CSS request: https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400..900;1,400..900&display=swap
+Files are unmodified WOFF2 downloads. Latin and Latin Extended; normal and italic; weight range 400-900.
+
+roboto-latin-ext-italic.woff2
+https://fonts.gstatic.com/s/roboto/v51/KFO5CnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmkCHkaWzU.woff2
+SHA256: 7F21D061A9DE1EA78A858938FF3B8E677869656B10BAD470FC6039F8F3DAF329
+
+roboto-latin-italic.woff2
+https://fonts.gstatic.com/s/roboto/v51/KFO5CnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmkBnka.woff2
+SHA256: 14F23757C6B41B4B6C0B967CA3FA74FF47A868728158373461C4E6E4B6368F19
+
+roboto-latin-ext-normal.woff2
+https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBGEe.woff2
+SHA256: CEDB374B05A35034CF96DB185DB4EEB8F8CE49E1A56197673702FF11B5533D6E
+
+roboto-latin-normal.woff2
+https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+SHA256: 1404CA348BD75EF836F4DD8B6F2CC719458642D1237C368296B2FC652DCA47DC

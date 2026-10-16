@@ -1,0 +1,8 @@
+@import './fonts.css';
+/* Shared brand colors and primary typography. */
+:root {
+  --brand-yellow: #FFD000;
+  --brand-black: #0D0802;
+  --brand-gray: #BEBEBE;
+  --brand-font: 'Roboto', Arial, Helvetica, sans-serif;
+}

@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import FontPreload from '../components/FontPreload.astro';
 import { copy, locales, pageUrl, type Locale, type Page } from '../i18n';
 import { site, assets, deployment } from '../config/site';
 import '../styles/global.css';
@@ -17,7 +18,8 @@ const structuredData = { '@context': 'https://schema.org', ...site.business, '@i
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f3eadb" />
+    <FontPreload />
+    <meta name="theme-color" content="#0D0802" />
     <title>{title}</title>
     <meta name="description" content={t.descriptions[page]} />
     <link rel="canonical" href={canonical} />

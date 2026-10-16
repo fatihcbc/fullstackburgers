@@ -29,6 +29,22 @@ The portable runtime is local tooling, not part of the tracked project. Other ch
 
 Production remains on GitHub Pages from its existing configuration. The root CNAME and public/CNAME remain www.fullstackburgers.nl. Do not merge development into main or change GitHub Pages settings to enable staging.
 
+## Brand identity
+
+The official palette is defined in `src/styles/brand.css`: yellow `#FFD000`, black `#0D0802`, and gray `#BEBEBE`. Both existing stylesheets use these shared variables and Roboto as the primary font. Body text uses weight 400, navigation 600, buttons 700, and headings 700–900 according to hierarchy.
+
+Roboto v51 is self-hosted as official Google Fonts WOFF2 files under `public/fonts/roboto/`. Normal and italic variable faces support weights 400–900, with Latin and Latin Extended subsets for Dutch and English. `src/styles/fonts.css` preserves Google's Unicode ranges and uses `font-display: swap`. Only the regular Latin face is preloaded; other subsets/styles load when needed. Arial/Helvetica provide fallbacks. No Google font requests are made at runtime, and no font package dependency is required. The SIL Open Font License and download provenance/checksums are included as `OFL.txt` and `SOURCE.txt`. SVG logo lettering is unchanged; Uni 05_53 is not downloaded or used.
+
+`BrandLogo.astro` references the original `public/media/logo/10x10 cm logo drukwerk.svg` directly, preserving its square canvas, colors, proportions, and outlined lettering. It is used for the header and footer branding, including the retained prototype header. The mascot at `public/media/pixel/10x10 cm drukwerk.svg` remains unused. Do not crop, recolor, rewrite, rename, or duplicate these source assets.
+
+## Retro homepage prototype
+
+Review the isolated prototype at `/design/retro/` (Dutch) or `/en/design/retro/` (English). The existing homepages and route map remain unchanged. The language switch stays within the prototype; content links open the existing localized pages.
+
+`src/components/RetroPrototype.astro` shares the markup and localized content. `src/styles/retro.css` uses the shared brand colors and self-hosted Roboto. The full truck photograph in `public/media/truck-1.jpeg` is rendered without cropping and optimized by Astro into responsive WebP/JPEG variants. No client JavaScript or additional dependencies are used.
+
+Both prototype routes always emit `noindex,nofollow`, including production builds, and remain outside the production sitemap. Staging continues to apply its existing environment-wide headers. `npm run verify:all` checks both languages, optimized image assets, links, and indexing policy in both environments.
+
 ## Permanent staging on Cloudflare Pages
 
 The shared policy in config/environment.mjs uses DEPLOY_ENV=production (the default) or DEPLOY_ENV=staging. It sets both Astro's site URL and application SEO URLs. Staging uses https://beta.fullstackburgers.nl; production retains https://www.fullstackburgers.nl. Configure DEPLOY_ENV as a process/build environment variable, not in a local .env file. Astro's production build mode does not identify the hosting environment.
@@ -102,13 +118,13 @@ Define activation as startsAt <= now < endsAt, use highest priority with a deter
 
 ## Replacing visual placeholders
 
-All temporary artwork is local SVG, with no external image service, font provider, icon library or social embeds. These are illustrative shapes, not final branding. The preview notice, sample badges and image captions make this explicit.
+All temporary artwork is local SVG, with no external image service, icon library or social embeds. Fonts are self-hosted. Placeholder illustrations remain separate from the official SVG logo. The preview notice, sample badges and image captions identify provisional content.
 
 Change the central asset map in src/config/site.ts or the optional burger image/imageAlt frontmatter. Keep layout-independent aspect ratios in Media.astro and CSS. Media.astro wraps Astro Image; for final photographs, put images in src/assets and import their metadata through the central map so Astro can generate optimized output. Extend that component with responsive widths/formats when real photography is available; no page architecture changes are needed. Public SVG files are already small and served unchanged. Eager loading/high fetch priority is reserved for the hero; below-fold imagery is lazy, with explicit dimensions to reserve space.
 
-Current OG artwork is SVG as a temporary local placeholder. Replace it with a 1200×630 JPEG/PNG before launch for broad social-platform compatibility. Replace the text wordmark and favicon with approved designer assets. Video can be introduced behind the same media boundary, with poster artwork and reduced-motion considerations, when provided.
+Current OG artwork is SVG as a temporary local placeholder. Replace it with a 1200×630 JPEG/PNG before launch for broad social-platform compatibility. The official SVG logo now replaces the text wordmark; the favicon still needs approved designer artwork. Video can be introduced behind the same media boundary, with poster artwork and reduced-motion considerations, when provided.
 
-Design tokens for colour, typography, spacing and widths live in src/styles/global.css. System fonts keep this foundation independent of font downloads.
+Shared color and font tokens live in src/styles/brand.css; layout tokens remain in src/styles/global.css. Self-hosted WOFF2 assets keep the website independent of external font requests.
 
 ## SEO and launch work
 

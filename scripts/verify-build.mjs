@@ -6,7 +6,19 @@ const deployment = resolveDeployment(process.env);
 const dist = resolve('dist');
 async function walk(dir) { return (await Promise.all((await readdir(dir, { withFileTypes: true })).map(e => e.isDirectory() ? walk(join(dir, e.name)) : join(dir, e.name)))).flat(); }
 const files = await walk(dist);
-const pages = files.filter(f => f.endsWith('.html') && !f.endsWith('404.html') && f !== join(dist, 'index.html'));
+const fontFiles = files.filter(file => file.endsWith('.woff2'));
+assert.equal(fontFiles.length, 4, 'Expected normal/italic Latin and Latin Extended Roboto faces');
+for (const file of fontFiles) {
+  const bytes = await readFile(file);
+  assert.equal(bytes.subarray(0, 4).toString('ascii'), 'wOF2', 'Invalid WOFF2 font');
+}
+for (const file of files.filter(file => file.endsWith('.css'))) {
+  const css = await readFile(file, 'utf8');
+  assert(!/https?:\/\/fonts\.(googleapis|gstatic)\.com/.test(css), 'Fonts must be self-hosted');
+  for (const url of css.matchAll(/url\(["']?(\/fonts\/[^)"']+)/g)) await access(join(dist, url[1]));
+}
+const prototypePaths = [join(dist, 'design', 'retro', 'index.html'), join(dist, 'en', 'design', 'retro', 'index.html')];
+const pages = files.filter(f => f.endsWith('.html') && !f.endsWith('404.html') && f !== join(dist, 'index.html') && !prototypePaths.includes(f));
 assert.equal(pages.length, 10, 'Expected five pages in both languages');
 const titles = new Set(); const descriptions = new Set();
 for (const file of pages) {
@@ -40,17 +52,43 @@ for (const file of files.filter(f => f.endsWith('.html'))) {
   const html = await readFile(file, 'utf8');
   const isRoot = file === join(dist, 'index.html');
   const is404 = file === join(dist, '404.html');
-  if (deployment.staging) assert(html.includes('<meta name="robots" content="noindex,nofollow"'), 'Missing staging noindex: ' + file);
+  assert(html.includes('href="/fonts/roboto/roboto-latin-normal.woff2"'), 'Missing local font preload: ' + file);
+  assert(!/https?:\/\/fonts\.(googleapis|gstatic)\.com/.test(html), 'Unexpected external font request');
+  if (deployment.staging || prototypePaths.includes(file)) assert(html.includes('<meta name="robots" content="noindex,nofollow"'), 'Missing noindex: ' + file);
   else if (isRoot) assert(html.includes('<meta name="robots" content="noindex,follow"'));
   else if (is404) assert(html.includes('<meta name="robots" content="noindex"'));
   else assert(!html.includes('name="robots"'), 'Production page unexpectedly restricted');
   const otherOrigin = deployment.staging ? 'https://www.fullstackburgers.nl' : 'https://beta.fullstackburgers.nl';
   assert(!html.includes(otherOrigin), 'Mixed environment URLs: ' + file);
+  for (const match of html.matchAll(/(?:href|src)="(\/[^"#?]*)/g)) {
+    const target = decodeURI(match[1]);
+    assert(!target.startsWith('//'), 'Unexpected protocol-relative URL');
+    await access(join(dist, target, target.endsWith('/') ? 'index.html' : ''));
+  }
   for (const match of html.matchAll(/https:\/\/(?:www|beta)\.fullstackburgers\.nl[^\s"<]*/g)) {
     const url = new URL(match[0]);
     if (url.hash) continue;
     await access(join(dist, decodeURI(url.pathname), url.pathname.endsWith('/') ? 'index.html' : ''));
   }
+}
+for (const [index, file] of prototypePaths.entries()) {
+  const html = await readFile(file, 'utf8');
+  const locale = index === 0 ? 'nl' : 'en';
+  assert(html.includes('<html lang="' + locale + '"'), 'Wrong prototype language');
+  assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1);
+  assert(html.includes('href="/design/retro/"') && html.includes('href="/en/design/retro/"'), 'Missing prototype language switch');
+  const path = index === 0 ? '/design/retro/' : '/en/design/retro/';
+  assert(html.includes('rel="canonical" href="' + deployment.url + path + '"'));
+  assert(!sitemap.includes('/design/retro/'), 'Prototype must stay out of the sitemap');
+  assert(html.includes('type="image/webp"') && html.includes('fetchpriority="high"'), 'Missing optimized priority hero');
+  for (const img of html.matchAll(/<img\b[^>]*>/g)) {
+    assert(/\balt="[^"]+"/.test(img[0]), 'Missing descriptive image alt');
+    assert(/\bwidth=/.test(img[0]) && /\bheight=/.test(img[0]), 'Missing image dimensions');
+  }
+  for (const srcset of html.matchAll(/srcset="([^"]+)"/g)) {
+    for (const candidate of srcset[1].split(',')) await access(join(dist, candidate.trim().split(/\s+/)[0]));
+  }
+  assert(!/<script\b/.test(html), 'Prototype should need no client JavaScript');
 }
 if (deployment.staging) {
   assert.equal(await readFile(join(dist, '_headers'), 'utf8'), '/*\n  X-Robots-Tag: noindex, nofollow\n');
@@ -60,4 +98,4 @@ if (deployment.staging) {
   await assert.rejects(access(join(dist, '_headers')));
   for (const loc of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)) assert(loc[1].startsWith(deployment.url + '/'));
 }
-console.log('Verified ' + deployment.environment + ': 12 HTML pages, localized SEO, absolute/local links and assets, indexing policy, sitemap, robots, headers and preserved GitHub Pages CNAME.');
+console.log('Verified ' + deployment.environment + ': 12 existing HTML pages and 2 bilingual prototype pages, localized SEO, links/assets, optimized hero, indexing policy, sitemap, robots, headers and preserved GitHub Pages CNAME.');
