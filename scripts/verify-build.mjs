@@ -132,7 +132,7 @@ for (const locale of ['nl', 'en']) {
   for (const html of [home, locations, prototype]) {
     for (const [day, name, url] of [
       [locale === 'nl' ? 'Zondag' : 'Sunday', 'Almere Muziekwijk', 'https://maps.app.goo.gl/EsycCHAQrW5B5s397'],
-      [locale === 'nl' ? 'Maandag' : 'Monday', 'Homerusplein, Almere Poort', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Homerusplein, Almere Poort')],
+      [locale === 'nl' ? 'Maandag' : 'Monday', 'Homerusplein, Almere Poort', 'https://maps.app.goo.gl/9kqmWKQLQ9rSy3kZ9'],
     ]) {
       assert(html.includes(day) && html.includes(name), 'Missing regular location');
       const link = [...html.matchAll(/<a\b([^>]+)>([\s\S]*?)<\/a>/g)].find(match => match[1].includes('href="' + url.replaceAll('&', '&amp;') + '"'));
@@ -142,7 +142,7 @@ for (const locale of ['nl', 'en']) {
       assert(link[2].includes(label), 'Wrong directions button label');
       assert(link[1].includes('aria-label="' + label + ': ' + name), 'Directions need a location-specific accessible name');
     }
-    assert(!html.includes('query=Almere%20Muziekwijk'), 'Sunday must use the exact supplied Maps URL');
+    assert(!html.includes('google.com/maps/search'), 'Locations must use the exact supplied Maps URLs');
     assert(!/Bekijk op Google Maps|View on Google Maps/.test(html), 'Old directions label remains');
     assert(!/openingHours|\d{1,2}:\d{2}/.test(html), 'Opening times were not supplied');
   }
