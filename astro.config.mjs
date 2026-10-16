@@ -15,6 +15,12 @@ export default defineConfig({
         if (deployment.staging) {
           await writeFile(new URL('_headers', dir), '/*\n  X-Robots-Tag: noindex, nofollow\n');
           await unlink(new URL('CNAME', dir));
+        } else {
+          // Match only Pages hostnames, including commit and branch aliases.
+          // Absolute _headers patterns also match HTTP; www remains unrestricted.
+          await writeFile(new URL('_headers', dir),
+            'https://:project.pages.dev/*\n  X-Robots-Tag: noindex, nofollow\n\n' +
+            'https://:version.:project.pages.dev/*\n  X-Robots-Tag: noindex, nofollow\n');
         }
       },
     },
