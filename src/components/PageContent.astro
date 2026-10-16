@@ -9,7 +9,7 @@ const { locale, page } = Astro.props; const t = copy[locale];
 const intros = { home: t.intro, menu: t.menuIntro, about: t.aboutIntro, locations: t.locationsIntro };
 ---
 {page === 'home' ? <Home locale={locale} /> : <>
-  <section class="page-heading wrapper"><p class="eyebrow">Fullstack Burgers / Almere</p><h1>{t.nav[page]}</h1><p class="intro">{intros[page]}</p></section>
+  <section class="page-heading wrapper"><p class="eyebrow">Fullstack Burgers / Almere</p><h1>{page === 'locations' ? t.locationsHeading : t.nav[page]}</h1><p class="intro">{intros[page]}</p></section>
   {page === 'menu' && <Menu locale={locale} />}
   {page === 'about' && <section class="section wrapper split" aria-labelledby="about-story"><TruckPhoto locale={locale} /><div><h2 id="about-story">{t.aboutDetail}</h2><p>{t.aboutBody}</p></div></section>}
   {page === 'locations' && <section class="section wrapper" aria-labelledby="locations-title"><h2 id="locations-title">{t.locationsTitle}</h2><Locations locale={locale} /></section>}

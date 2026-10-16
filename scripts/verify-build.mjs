@@ -45,6 +45,21 @@ const prototypePaths = [join(dist, 'design', 'retro', 'index.html'), join(dist, 
 const pages = files.filter(f => f.endsWith('.html') && !f.endsWith('404.html') && f !== join(dist, 'index.html') && !prototypePaths.includes(f));
 assert.equal(pages.length, 8, 'Expected four pages in both languages after Ingredients removal');
 const titles = new Set(); const descriptions = new Set();
+const routePairs = [['', ''], ['menu/', 'menu/'], ['over-ons/', 'about/'], ['locaties-evenementen/', 'locations-events/']];
+for (const pair of routePairs) {
+  for (const [index, locale] of ['nl', 'en'].entries()) {
+    const html = await readFile(join(dist, locale, pair[index], 'index.html'), 'utf8');
+    assert(html.includes('<html lang="' + locale + '"'), 'Wrong document language');
+    assert(html.includes('rel="canonical" href="' + deployment.url + '/' + locale + '/' + pair[index] + '"'), 'Wrong page canonical');
+    for (const [alternate, language] of ['nl', 'en'].entries()) assert(html.includes('hreflang="' + language + '" href="' + deployment.url + '/' + language + '/' + pair[alternate] + '"'), 'Wrong reciprocal hreflang target');
+    assert(html.includes('hreflang="x-default" href="' + deployment.url + '/nl/' + pair[0] + '"'), 'Wrong default language target');
+  }
+}
+for (const [path, expected] of [
+  ['nl/index.html', 'Smashburgers in Almere | Fullstack Burgers'],
+  ['nl/menu/index.html', 'Smashburger menu in Almere | Fullstack Burgers'],
+  ['nl/locaties-evenementen/index.html', 'Foodtruck in Almere: Muziekwijk en Poort | Fullstack Burgers'],
+]) assert((await readFile(join(dist, path), 'utf8')).includes('<title>' + expected + '</title>'), 'Required Dutch SEO title missing');
 for (const file of pages) {
   const html = await readFile(file, 'utf8');
   assert(!html.includes('truck-1'), 'Backup truck image must not be referenced by website pages');
@@ -79,6 +94,26 @@ for (const file of files.filter(f => f.endsWith('.html'))) {
   assert(!html.includes('<figcaption'), 'Truck photo captions must remain removed');
   const isRoot = file === join(dist, 'index.html');
   const is404 = file === join(dist, '404.html');
+  if (isRoot) {
+    assert(html.includes('rel="canonical" href="' + deployment.url + '/nl/"'), 'Root must retain the Dutch homepage canonical');
+    assert(!/http-equiv="refresh"/i.test(html) && !/<script\b[^>]*src=/.test(html), 'Root must remain accessible without redirect scripts');
+  }
+  if (!is404 && !prototypePaths.includes(file)) {
+    assert.equal(/Staging · website in (ontwikkeling|development)/.test(html), deployment.staging, 'Staging indicator must follow the deployment environment');
+    const schema = JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
+    assert.equal(schema['@context'], 'https://schema.org');
+    assert.equal(schema['@type'], 'FoodEstablishment');
+    assert.equal(schema['@id'], deployment.url + '/#business');
+    assert.equal(schema.name, 'Fullstack Burgers');
+    assert.equal(schema.url, deployment.url);
+    assert.equal(schema.servesCuisine, 'Smash burgers');
+    assert.deepEqual(schema.areaServed, { '@type': 'City', name: 'Almere' });
+    assert.equal(schema.logo, deployment.url + '/media/logo/10x10%20cm%20logo%20drukwerk.svg');
+    assert.equal(schema.image, deployment.url + '/media/truck-2.png');
+    assert.equal(schema.hasMenu, deployment.url + (html.includes('<html lang="en"') ? '/en/menu/' : '/nl/menu/'));
+    for (const unconfirmed of ['address', 'openingHours', 'openingHoursSpecification', 'telephone', 'sameAs', 'geo']) assert(!(unconfirmed in schema), 'Unconfirmed business detail: ' + unconfirmed);
+  }
+  if (!deployment.staging) assert(!/Staging · website in (ontwikkeling|development)/.test(html), 'Staging label visible on production');
   for (const icon of ['/favicon.ico', '/icons/favicon.svg', '/icons/favicon-32.png', '/icons/apple-touch-icon.png']) assert(html.includes('href="' + icon + '"'), 'Missing favicon reference: ' + file);
   assert(!html.includes('href="/favicon.svg"'), 'Generic favicon reference remains');
   assert(!/\/(nl\/ingredienten|en\/ingredients)\//.test(html), 'Removed Ingredients route is still linked');
@@ -86,7 +121,6 @@ for (const file of files.filter(f => f.endsWith('.html'))) {
   assert(html.includes('href="/fonts/roboto/roboto-latin-normal.woff2"'), 'Missing local font preload: ' + file);
   assert(!/https?:\/\/fonts\.(googleapis|gstatic)\.com/.test(html), 'Unexpected external font request');
   if (deployment.staging || prototypePaths.includes(file)) assert(html.includes('<meta name="robots" content="noindex,nofollow"'), 'Missing noindex: ' + file);
-  else if (isRoot) assert(html.includes('<meta name="robots" content="noindex,follow"'));
   else if (is404) assert(html.includes('<meta name="robots" content="noindex"'));
   else assert(!html.includes('name="robots"'), 'Production page unexpectedly restricted');
   const otherOrigin = deployment.staging ? 'https://www.fullstackburgers.nl' : 'https://beta.fullstackburgers.nl';
@@ -108,6 +142,8 @@ for (const locale of ['nl', 'en']) {
   const menu = await readFile(join(dist, locale, 'menu/index.html'), 'utf8');
   const locationPath = locale === 'nl' ? 'locaties-evenementen' : 'locations-events';
   const locations = await readFile(join(dist, locale, locationPath, 'index.html'), 'utf8');
+  assert(locations.includes(locale === 'nl' ? '>Onze foodtruck in Almere</h1>' : '>Our food truck in Almere</h1>'), 'Missing localized location heading');
+  assert(locations.includes(locale === 'nl' ? 'Op maandag vind je onze smashburger-foodtruck op het Homerusplein in Almere Poort.' : 'On Mondays, our smash burger food truck is at Homerusplein in Almere Poort.'), 'Missing confirmed Monday location copy');
   assert(home.includes('/media/pixel/10x10%20cm%20drukwerk.svg'), 'Missing original mascot');
   assert(home.includes('truck-2.') && home.includes('type="image/webp"') && home.includes('fetchpriority="high"'), 'Missing optimized original truck hero');
   assert(home.includes(locale === 'nl' ? 'Smashburgers' : 'Almere-based smash burger food truck'));
