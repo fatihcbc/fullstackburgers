@@ -1,0 +1,20 @@
+---
+import { copy, type Locale } from '../i18n';
+import { regularLocations } from '../config/business';
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const t = copy[locale];
+---
+<div class="regular-locations">{regularLocations.map(location => <article class="location-card">
+  <p class="location-day">{location.day[locale]}</p>
+  <h3>{location.name}</h3>
+  <a href={location.directionsUrl} target="_blank" rel="noopener noreferrer" aria-label={t.maps + ': ' + location.name + ' (' + t.newTab + ')'}>{t.maps}<span aria-hidden="true"> ↗</span></a>
+</article>)}</div>
+<style>
+  .regular-locations { display: grid; gap: 1rem; margin-top: 1.5rem; }
+  .location-card { min-width: 0; padding: 1.5rem; border: 1px solid var(--brand-gray); }
+  .location-day { color: var(--brand-gray); font-weight: 600; margin-bottom: .5rem; }
+  .location-card h3 { color: var(--brand-yellow); font-size: 1.3rem; line-height: 1.3; margin-bottom: 1rem; }
+  .location-card a { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .4rem; min-height: 44px; max-width: 100%; padding: .5rem .75rem; border: 1px solid currentColor; color: var(--brand-yellow); font-weight: 600; }
+  @media (min-width: 42rem) { .regular-locations { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>

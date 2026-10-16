@@ -1,0 +1,112 @@
+---
+import { Picture } from 'astro:assets';
+import truck from '../../public/media/truck-2.png';
+import { copy, pageUrl, type Locale } from '../i18n';
+import { site } from '../config/site';
+import BrandLogo from './BrandLogo.astro';
+import FontPreload from './FontPreload.astro';
+import FaviconHead from './FaviconHead.astro';
+import BurgerGrid from './BurgerGrid.astro';
+import PixelMascot from './PixelMascot.astro';
+import Locations from './Locations.astro';
+import '../styles/retro.css';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const t = copy[locale];
+const nl = locale === 'nl';
+const prototypeUrl = (language: Locale) => language === 'nl' ? '/design/retro/' : '/en/design/retro/';
+const canonical = new URL(prototypeUrl(locale), site.url);
+const text = nl ? {
+  preview: 'Designprototype · in ontwikkeling', back: 'Huidige website',
+  eyebrow: 'Fullstack Burgers / Almere', first: 'Smashburgers.', second: 'Uit', third: 'Almere.',
+  truckAlt: 'De donkergrijze Fullstack Burgers foodtruck met gele belettering en pixelpatronen, volledig in beeld.',
+  truckLabel: 'Van de straat. Voor de trek.',
+  menuLabel: 'Ons menu', sample: 'Bekijk het volledige menu',
+  menuNote: 'Single · Double · Triple',
+  storyLink: 'Meer over Fullstack Burgers',
+  footer: 'Smashburgers uit Almere.', navigation: 'Hoofdnavigatie', language: 'Taal',
+} : {
+  preview: 'Design prototype · in development', back: 'Current website',
+  eyebrow: 'Fullstack Burgers / Almere', first: 'Smash burgers.', second: 'From', third: 'Almere.',
+  truckAlt: 'The dark grey Fullstack Burgers food truck with yellow lettering and pixel patterns, shown in full.',
+  truckLabel: 'Street food. Big appetite.',
+  menuLabel: 'Our menu', sample: 'Explore the full menu',
+  menuNote: 'Single · Double · Triple',
+  storyLink: 'More about Fullstack Burgers',
+  footer: 'Smash burgers from Almere.', navigation: 'Main navigation', language: 'Language',
+};
+---
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <FontPreload />
+    <meta name="theme-color" content="#0D0802" />
+    <title>{nl ? 'Retro designprototype' : 'Retro design prototype'} | Fullstack Burgers</title>
+    <meta name="description" content={t.descriptions.home} />
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="nl" href={new URL(prototypeUrl('nl'), site.url)} />
+    <link rel="alternate" hreflang="en" href={new URL(prototypeUrl('en'), site.url)} />
+    <link rel="alternate" hreflang="x-default" href={new URL(prototypeUrl('nl'), site.url)} />
+    <meta property="og:title" content="Fullstack Burgers" />
+    <meta property="og:description" content={t.descriptions.home} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/media/truck-2.png', site.url)} />
+    <meta property="og:image:alt" content={text.truckAlt} />
+    <FaviconHead />
+  </head>
+  <body class="retro">
+    <a class="retro-skip" href="#main">{t.skip}</a>
+    <div class="retro-preview"><div class="retro-wrap"><span><span class="status-pixel" aria-hidden="true"></span>{text.preview}</span><a href={pageUrl(locale, 'home')}>{text.back} <span aria-hidden="true">↗</span></a></div></div>
+    <header class="retro-header retro-wrap">
+      <a class="retro-brand-home" href={prototypeUrl(locale)} aria-label={nl ? 'Fullstack Burgers — homepagina' : 'Fullstack Burgers — homepage'}><BrandLogo /></a>
+      <nav class="retro-nav" aria-label={text.navigation}>
+        <a href={pageUrl(locale, 'menu')}>{t.nav.menu}</a>
+        <a href={pageUrl(locale, 'about')}>{t.nav.about}</a>
+        <a href={pageUrl(locale, 'locations')}>{t.nav.locations}</a>
+      </nav>
+      <nav class="retro-language" aria-label={text.language}>
+        {(['nl', 'en'] as const).map(language => <a href={prototypeUrl(language)} lang={language} hreflang={language} aria-current={language === locale ? 'page' : undefined} aria-label={language === 'nl' ? 'Nederlands' : 'English'}>{language.toUpperCase()}</a>)}
+      </nav>
+    </header>
+    <main id="main" tabindex="-1">
+      <section class="retro-hero retro-wrap" aria-labelledby="hero-title">
+        <div class="retro-hero-copy">
+          <div class="retro-brand-accent"><p class="retro-kicker"><span aria-hidden="true">+</span> {text.eyebrow}</p><PixelMascot /></div>
+          <h1 id="hero-title"><span>{text.first}</span><span>{text.second}</span><span class="yellow">{text.third}</span></h1>
+          <p class="retro-intro">{t.intro}</p>
+          <a class="retro-button" href={pageUrl(locale, 'menu')}>{t.menuCta}<span aria-hidden="true">↗</span></a>
+        </div>
+        <figure class="retro-truck">
+          <div class="retro-photo-top"><span>{text.truckLabel}</span><span aria-hidden="true">FSB / 01</span></div>
+          <div class="retro-photo-frame">
+            <Picture src={truck} widths={[480, 800, 1200, 1600]} sizes="(min-width: 1520px) 840px, (min-width: 960px) 58vw, calc(100vw - 40px)" formats={['webp']} fallbackFormat="jpeg" quality={82} alt={text.truckAlt} loading="eager" fetchpriority="high" />
+            <span class="pixel-corner pixel-corner--top" aria-hidden="true"></span>
+            <span class="pixel-corner pixel-corner--bottom" aria-hidden="true"></span>
+          </div>
+        </figure>
+      </section>
+      <section class="retro-stop" aria-labelledby="stop-title"><div class="retro-wrap retro-stop-inner">
+        <span class="retro-stop-icon" aria-hidden="true">↗</span>
+        <div><p class="retro-kicker">{t.stop}</p><h2 id="stop-title">{t.stopTitle}</h2><p>{t.stopText}</p></div>
+        <a href={pageUrl(locale, 'locations')}>{t.locationCta} <span aria-hidden="true">↗</span></a>
+      </div></section>
+      <section class="retro-menu retro-wrap" aria-labelledby="retro-locations-title"><p class="retro-kicker">{t.stop}</p><h2 id="retro-locations-title">{t.locationsTitle}</h2><Locations locale={locale} /></section>
+      <section class="retro-menu retro-wrap" aria-labelledby="menu-title">
+        <div class="retro-section-heading"><div><p class="retro-kicker">01 / {text.menuLabel}</p><h2 id="menu-title">{t.showcase}</h2></div><p>{t.showcaseText}</p></div>
+        <BurgerGrid locale={locale} retro />
+        <div class="retro-menu-foot"><p>{text.menuNote}</p><a class="retro-link" href={pageUrl(locale, 'menu')}>{text.sample} <span aria-hidden="true">↗</span></a></div>
+      </section>
+      <section class="retro-story retro-wrap" aria-labelledby="story-title">
+        <div class="retro-story-heading"><p class="retro-kicker">02 / {t.story}</p><h2 id="story-title">{t.storyTitle}</h2><a class="retro-link" href={pageUrl(locale, 'about')}>{text.storyLink} <span aria-hidden="true">↗</span></a></div>
+        <div class="retro-story-copy"><p>{t.storyText}</p></div>
+      </section>
+      <div class="retro-signoff retro-wrap"><p>{text.footer}</p><span class="retro-checker" aria-hidden="true"></span></div>
+    </main>
+    <footer class="retro-footer retro-wrap"><p>© {new Date().getFullYear()} Fullstack Burgers</p><p>{text.preview}</p><a href={pageUrl(locale, 'home')}>{text.back} <span aria-hidden="true">↗</span></a></footer>
+  </body>
+</html>

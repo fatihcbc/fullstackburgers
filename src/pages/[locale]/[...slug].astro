@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageContent from '../../components/PageContent.astro';
+import { locales, pages, pageUrl, type Locale, type Page } from '../../i18n';
+export function getStaticPaths() {
+  return locales.flatMap(locale => pages.map(page => ({
+    params: { locale, slug: pageUrl(locale, page).split('/').filter(Boolean).slice(1).join('/') || undefined },
+    props: { locale, page },
+  })));
+}
+interface Props { locale: Locale; page: Page; }
+const { locale, page } = Astro.props;
+---
+<BaseLayout locale={locale} page={page}><PageContent locale={locale} page={page} /></BaseLayout>

@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import { copy, type Locale } from '../i18n';
+import { formatPrice } from '../config/business';
+import OpeningPricesNotice from './OpeningPricesNotice.astro';
+interface Props { locale: Locale; retro?: boolean; showNotice?: boolean; }
+const { locale, retro = false, showNotice = true } = Astro.props;
+const t = copy[locale];
+const burgers = (await getCollection('burgers', ({ data }) => data.locale === locale && !data.draft && !data.placeholder)).sort((a, b) => a.data.order - b.data.order);
+---
+{showNotice && <OpeningPricesNotice locale={locale} />}
+<div class={retro ? 'retro-menu-grid' : 'burger-grid'}>{burgers.map(({ data }) => <article class={retro ? 'retro-menu-card' : 'burger-card'}>
+  <div class={retro ? undefined : 'card-body'}>
+    <h3>{data.title}</h3><p class="burger-description">{data.description}</p>
+    <dl class="burger-prices">{[
+      { label: t.burger, opening: data.openingPriceCents, standard: data.standardPriceCents },
+      { label: t.combo, opening: data.openingComboPriceCents, standard: data.standardComboPriceCents },
+    ].map(option => <div class="price-option"><dt>{option.label}</dt><dd>
+      <span class="price-line opening-price"><span>{t.openingPrice}</span><strong>{formatPrice(option.opening, locale)}</strong></span>
+      <span class="price-line future-price"><span>{t.futureStandardPrice}</span><span class="price-value">{formatPrice(option.standard, locale)}</span></span>
+    </dd></div>)}</dl>
+  </div>
+</article>)}</div>
+<p class="combo-note">{t.comboIncludes}</p>
+<style>
+  h3 { overflow-wrap: break-word; }
+  .burger-description { margin-top: .75rem; }
+  .burger-prices { margin: 1.25rem 0 0; }
+  .price-option { padding-block: .75rem; }
+  .price-option + .price-option { border-top: 1px solid var(--brand-gray); }
+  dt { font-weight: 700; margin-bottom: .4rem; }
+  dd { margin: 0; }
+  .price-line { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem 1rem; }
+  .opening-price { color: var(--brand-yellow); font-size: .8rem; }
+  .opening-price strong { font-size: 1.5rem; line-height: 1.3; white-space: nowrap; }
+  .future-price { color: var(--brand-gray); font-size: .75rem; margin-top: .35rem; }
+  .price-value { white-space: nowrap; }
+  .combo-note { margin-top: 1rem; color: var(--brand-gray); }
+</style>
