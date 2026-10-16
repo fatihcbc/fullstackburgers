@@ -27,7 +27,7 @@ npm run dev
 
 The portable runtime is local tooling, not part of the tracked project. Other checkouts should install a supported Node version and use npm ci.
 
-Production remains on GitHub Pages from its existing configuration. The root CNAME and public/CNAME remain www.fullstackburgers.nl. Do not merge development into main or change GitHub Pages settings to enable staging.
+Production uses the existing GitHub Pages configuration: main, repository root. The root CNAME and public/CNAME remain www.fullstackburgers.nl. After verifying staging, merge development into main and publish the verified production dist contents at the repository root with .nojekyll. Commit these publication files only on main; they must be regenerated for each production release. Staging continues to build development directly in Cloudflare Pages. Hosting settings do not need to change.
 
 ## Brand identity
 
