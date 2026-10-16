@@ -1,6 +1,6 @@
 # Fullstack Burgers
 
-Phase 1: a static Astro website with Dutch and English pages, vanilla CSS and Markdown collections. All copy and artwork are provisional. No React, Tailwind, CMS, database or backend.
+Static Astro website for Fullstack Burgers, an Almere-based smash burger food truck, with Dutch and English pages, vanilla CSS and Markdown collections. The menu, prices and regular locations use confirmed business information. No React, Tailwind, CMS, database or backend.
 
 ## Local development
 
@@ -35,7 +35,15 @@ The official palette is defined in `src/styles/brand.css`: yellow `#FFD000`, bla
 
 Roboto v51 is self-hosted as official Google Fonts WOFF2 files under `public/fonts/roboto/`. Normal and italic variable faces support weights 400–900, with Latin and Latin Extended subsets for Dutch and English. `src/styles/fonts.css` preserves Google's Unicode ranges and uses `font-display: swap`. Only the regular Latin face is preloaded; other subsets/styles load when needed. Arial/Helvetica provide fallbacks. No Google font requests are made at runtime, and no font package dependency is required. The SIL Open Font License and download provenance/checksums are included as `OFL.txt` and `SOURCE.txt`. SVG logo lettering is unchanged; Uni 05_53 is not downloaded or used.
 
-`BrandLogo.astro` references the original `public/media/logo/10x10 cm logo drukwerk.svg` directly, preserving its square canvas, colors, proportions, and outlined lettering. It is used for the header and footer branding, including the retained prototype header. The mascot at `public/media/pixel/10x10 cm drukwerk.svg` remains unused. Do not crop, recolor, rewrite, rename, or duplicate these source assets.
+`BrandLogo.astro` references the original `public/media/logo/10x10 cm logo drukwerk.svg` directly, preserving its square canvas, colors, proportions, and outlined lettering. It is used for the header and footer branding, including the retained prototype header. `PixelMascot.astro` displays the original `public/media/pixel/10x10 cm drukwerk.svg` as a small decorative hero accent on both homepage designs. Do not crop, recolor, rewrite, rename, or duplicate these source assets.
+
+## Confirmed business content
+
+The homepage and About page describe Fullstack Burgers as an Almere-based smash burger food truck. The original `public/media/truck-1.jpeg` supplies responsive WebP/JPEG photography without cropping or artwork changes. The original `public/media/posters-01.jpg` is displayed on both menu pages, with an accessible HTML price list and a link to the full-size original. Poster text such as “Grand Opening Specials” is preserved as artwork; no promotion dates or additional dietary claims have been added to website copy.
+
+Published burger records are `single-smash.md`, `double-smash.md` and `triple-smash.md` in each language. `priceCents` / `comboPriceCents` are 795/1095, 995/1295 and 1195/1495 respectively. `src/config/business.ts` holds the confirmed sides (fries 350 cents, soft drinks 325 cents), and the regular locations: Sunday in Almere Muziekwijk; Monday at Homerusplein, Almere Poort. Combo means burger + fries + soft drink. No opening times or exact Muziekwijk pitch have been supplied; Maps links perform place searches, not precise food truck pin lookups.
+
+The Ingredients page, navigation item and sections have been removed in both languages. Header/footer links, hreflang and the production sitemap derive from the remaining four-page route map. Existing home, menu, about, location and prototype URLs are preserved. Unconfirmed sample events are drafts and do not appear on public pages; sample announcements remain unpublished. The generic favicon is the remaining temporary visual. No official asset is removed.
 
 ## Retro homepage prototype
 
@@ -67,7 +75,7 @@ Manual setup, after deployment authorization:
 2. Set this project's production branch to development, enable its automatic deployments, and disable preview-branch deployments. This Cloudflare label does not refer to the live GitHub Pages website. Cloudflare builds fail unless CF_PAGES_BRANCH=development and DEPLOY_ENV=staging.
 3. Select Astro, repository root, build command npm run verify, output directory dist, and environment variables DEPLOY_ENV=staging and NODE_VERSION=22.23.3. Cloudflare supplies CF_PAGES and CF_PAGES_BRANCH automatically. No adapter, Wrangler configuration, GitHub Actions workflow, or deployment token is required.
 4. Add beta.fullstackburgers.nl under the project's Custom domains. Then add only a beta CNAME at the existing DNS provider, pointing to the assigned project.pages.dev hostname. Keep nameservers and all production DNS records unchanged. Confirm domain activation and HTTPS in Cloudflare.
-5. Check the root, ten localized pages, language links, images/styles, direct navigation, real 404 status, beta metadata URLs, and noindex headers on both beta and Pages URLs. Compare production DNS, Pages settings, deployed commit, content/assets, redirects, and SEO against the pre-deployment baseline. Confirm the next development push automatically updates beta.
+5. Check the root, eight localized pages, language links, images/styles, direct navigation, real 404 status, beta metadata URLs, and noindex headers on both beta and Pages URLs. Compare production DNS, Pages settings, deployed commit, content/assets, redirects, and SEO against the pre-deployment baseline. Confirm the next development push automatically updates beta.
 
 No Cloudflare project creation or DNS change is performed by these scripts. Indexing directives are not authentication; beta is intended to be publicly accessible but excluded from search results.
 
@@ -77,14 +85,14 @@ No Cloudflare project creation or DNS change is performed by these scripts. Inde
 src/
   assets/          # Place final imported image assets here when supplied
   components/      # Header, footer, media, home sections and collection views
-  config/site.ts   # Domain, business configuration and replaceable asset map
+  config/         # Environment, site identity, regular locations and sides
   content/         # burgers/, announcements/, events/; each has nl/ and en/
   content.config.ts # Typed collection schemas
   i18n.ts          # Localized routes, interface copy and page metadata
   layouts/         # Shared HTML shell and SEO metadata
   pages/           # Static localized routes, root, 404, sitemap and robots
   styles/          # Mobile-first CSS and custom properties
-public/            # Files copied unchanged: CNAME, favicon, temporary SVGs
+public/            # Original brand assets, poster, truck photograph, fonts, CNAME, favicon
 scripts/verify-build.mjs # Post-build acceptance checks
 ~~~
 
@@ -95,18 +103,17 @@ scripts/verify-build.mjs # Post-build acceptance checks
 | Home | /nl/ | /en/ |
 | Menu | /nl/menu/ | /en/menu/ |
 | About | /nl/over-ons/ | /en/about/ |
-| Ingredients | /nl/ingredienten/ | /en/ingredients/ |
 | Locations & Events | /nl/locaties-evenementen/ | /en/locations-events/ |
 
 Dutch is the provisional default. The root serves a useful Dutch homepage, canonicalized to /nl/ and marked noindex to avoid a duplicate index entry. No automatic browser-language detection. Language links preserve the corresponding page. Canonicals, reciprocal hreflang (including x-default) and sitemap all share the route map. At launch, a host-level redirect from / to /nl/ can replace the root alias if supported.
 
 ## Markdown editing
 
-Add a Markdown file under the appropriate collection and locale directory. Pair translations using the same translationKey. Set draft: true to exclude a burger/event from public views. Set placeholder: false only when content is verified. No prices, supplier claims, dietary guarantees, actual events or business contact details have been invented.
+Add a Markdown file under the appropriate collection and locale directory. Pair translations using the same translationKey. Set draft: true to exclude a burger/event from publication. Set placeholder: false only when content is verified. Burger cards exclude both drafts and placeholders. Prices currently published were supplied by the business; no supplier claims, dietary guarantees, opening times or contact details have been invented.
 
-Burgers require locale, translationKey, title and description. Optional fields: order, image, imageAlt, allergens, draft and placeholder. The optional image field is a relative path to a source image (for example ../../../assets/classic.jpg); Astro validates it and supplies image metadata to the responsive image component. Body Markdown renders beneath the summary in menu/home cards. Until confirmed, allergen information is deliberately not presented as complete. Final menu pricing and dietary presentation are later work.
+Burgers require locale, translationKey, title, description, priceCents and comboPriceCents (positive integer euro cents). Optional fields: order, draft and placeholder. Cards render the confirmed title, description and both prices; no invented product photography is shown. There is no published allergen list or ingredient claim.
 
-Events share the common fields and add status (unconfirmed/confirmed/cancelled), optional startsAt/endsAt, location and address. Use ISO timestamps with explicit offsets, e.g. 2027-07-01T18:00:00+02:00. Dates are displayed in Europe/Amsterdam. The homepage has an honest unconfirmed next-stop fallback; automatic next-event selection is later work.
+Events share the common fields and add status (unconfirmed/confirmed/cancelled), optional startsAt/endsAt, location and address. Use ISO timestamps with explicit offsets. The previous sample events are drafts; public location cards use the confirmed weekly schedule in src/config/business.ts. No opening times or automatic next-event selection are implemented.
 
 ### Announcements without daily rebuilds (future phase)
 
@@ -118,11 +125,11 @@ Define activation as startsAt <= now < endsAt, use highest priority with a deter
 
 ## Replacing visual placeholders
 
-All temporary artwork is local SVG, with no external image service, icon library or social embeds. Fonts are self-hosted. Placeholder illustrations remain separate from the official SVG logo. The preview notice, sample badges and image captions identify provisional content.
+Temporary burger, story, social and social-card SVG illustrations have been removed. Homepage/About photography, the menu poster, logo and mascot use original business assets. Fonts are self-hosted. There is no external image service, icon library or social embed.
 
-Change the central asset map in src/config/site.ts or the optional burger image/imageAlt frontmatter. Keep layout-independent aspect ratios in Media.astro and CSS. Media.astro wraps Astro Image; for final photographs, put images in src/assets and import their metadata through the central map so Astro can generate optimized output. Extend that component with responsive widths/formats when real photography is available; no page architecture changes are needed. Public SVG files are already small and served unchanged. Eager loading/high fetch priority is reserved for the hero; below-fold imagery is lazy, with explicit dimensions to reserve space.
+TruckPhoto.astro and Menu.astro use Astro Picture to generate responsive WebP/JPEG assets while retaining each original aspect ratio. Original public files remain available unchanged. The hero or menu poster uses eager loading/high fetch priority; below-fold photography is lazy. All images have intrinsic dimensions to reserve space. The poster has an equivalent HTML menu for mobile readability and accessibility.
 
-Current OG artwork is SVG as a temporary local placeholder. Replace it with a 1200×630 JPEG/PNG before launch for broad social-platform compatibility. The official SVG logo now replaces the text wordmark; the favicon still needs approved designer artwork. Video can be introduced behind the same media boundary, with poster artwork and reduced-motion considerations, when provided.
+Open Graph metadata uses the original truck JPEG, replacing the temporary SVG card. A dedicated approved social card and favicon can be supplied later. The truck photograph is not cropped or edited to manufacture a social image.
 
 Shared color and font tokens live in src/styles/brand.css; layout tokens remain in src/styles/global.css. Self-hosted WOFF2 assets keep the website independent of external font requests.
 
@@ -130,7 +137,7 @@ Shared color and font tokens live in src/styles/brand.css; layout tokens remain 
 
 The shared layout supplies unique localized titles/descriptions, canonical URLs, Open Graph fields, language alternatives and minimal FoodEstablishment JSON-LD. Only the business name and existing domain are populated. Add verified address/service model, telephone, hours, social profiles and appropriate business subtype before validating rich-result eligibility. No ratings, opening hours or address are fabricated.
 
-In production, the sitemap lists the ten canonical language pages and robots.txt references it. Staging receives the environment-wide noindex policy described above and an empty, unadvertised sitemap.
+In production builds, the sitemap lists the eight canonical language pages and robots.txt references it. Staging receives the environment-wide noindex policy described above and an empty, unadvertised sitemap. These source changes do not change the currently deployed production site.
 
 Search Console integration is deferred. Later, verify the domain through DNS (preferred) or add the supplied verification tag/file, then submit /sitemap.xml. Do not invent verification tokens.
 

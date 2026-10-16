@@ -9,7 +9,7 @@ interface Props { locale: Locale; page: Page; root?: boolean; }
 const { locale, page, root = false } = Astro.props;
 const t = copy[locale];
 const pageTitle = page === 'menu' ? (locale === 'nl' ? 'Ons menu' : 'Our menu') : t.nav[page];
-const title = page === 'home' ? (locale === 'nl' ? 'Fullstack Burgers | Burgers in de maak' : 'Fullstack Burgers | Burgers in the making') : pageTitle + ' | ' + site.name;
+const title = page === 'home' ? t.homeTitle : pageTitle + ' | ' + site.name;
 const canonical = new URL(pageUrl(locale, page), site.url);
 const structuredData = { '@context': 'https://schema.org', ...site.business, '@id': site.url + '/#business', name: site.name, url: site.url };
 ---
@@ -34,7 +34,7 @@ const structuredData = { '@context': 'https://schema.org', ...site.business, '@i
     <meta property="og:locale" content={locale === 'nl' ? 'nl_NL' : 'en_GB'} />
     <meta property="og:locale:alternate" content={locale === 'nl' ? 'en_GB' : 'nl_NL'} />
     <meta property="og:image" content={new URL(assets.socialCard, site.url)} />
-    <meta property="og:image:alt" content={locale === 'nl' ? 'Fullstack Burgers — tijdelijk beeld' : 'Fullstack Burgers — temporary brand artwork'} />
+    <meta property="og:image:alt" content={t.truckAlt} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\u003c')} />
   </head>

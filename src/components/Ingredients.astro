@@ -1,6 +1,0 @@
----
-import { copy, type Locale } from '../i18n';
-interface Props { locale: Locale; }
-const { locale } = Astro.props; const t = copy[locale];
----
-<div class="ingredient-grid">{t.ingredientItems.map((item, i) => <article><span class="number" aria-hidden="true">0{i + 1}</span><h3>{item}</h3><p>{t.ingredientDetails[i]}</p></article>)}</div>

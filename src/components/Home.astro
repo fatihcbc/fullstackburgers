@@ -1,17 +1,17 @@
 ---
 import { copy, pageUrl, type Locale } from '../i18n';
-import Media from './Media.astro';
+import TruckPhoto from './TruckPhoto.astro';
+import PixelMascot from './PixelMascot.astro';
 import BurgerGrid from './BurgerGrid.astro';
-import Ingredients from './Ingredients.astro';
+import Locations from './Locations.astro';
 interface Props { locale: Locale; }
 const { locale } = Astro.props; const t = copy[locale];
 ---
 <section class="hero wrapper" aria-labelledby="hero-title">
-  <div class="hero-copy"><p class="eyebrow">{t.eyebrow}</p><h1 id="hero-title">{t.hero.split('\n').map(line => <span>{line}</span>)}</h1><p class="intro">{t.intro}</p><div class="actions"><a class="button" href={pageUrl(locale, 'menu')}>{t.menuCta}<span aria-hidden="true">↗</span></a><a class="text-link" href={pageUrl(locale, 'locations')}>{t.locationCta} →</a></div></div>
-  <Media kind="hero" label={t.imageLabel} eager />
+  <div class="hero-copy"><div class="hero-brand-accent"><p class="eyebrow">{t.eyebrow}</p><PixelMascot /></div><h1 id="hero-title">{t.hero.split('\n').map(line => <span>{line}</span>)}</h1><p class="intro">{t.intro}</p><div class="actions"><a class="button" href={pageUrl(locale, 'menu')}>{t.menuCta}<span aria-hidden="true">↗</span></a><a class="text-link" href={pageUrl(locale, 'locations')}>{t.locationCta} →</a></div></div>
+  <TruckPhoto locale={locale} eager />
 </section>
 <section class="stop-strip" aria-labelledby="stop-title"><div class="wrapper stop-inner"><p class="eyebrow">{t.stop}</p><div><h2 id="stop-title">{t.stopTitle}</h2><p>{t.stopText}</p></div><a class="round-link" href={pageUrl(locale, 'locations')} aria-label={t.locationCta}>↗</a></div></section>
-<section class="section wrapper" aria-labelledby="burger-title"><div class="section-heading"><div><p class="eyebrow">01 / {t.nav.menu}</p><h2 id="burger-title">{t.showcase}</h2><p>{t.showcaseText}</p></div><a class="text-link" href={pageUrl(locale, 'menu')}>{t.menuCta} →</a></div><BurgerGrid locale={locale} /></section>
-<section class="story-section section" aria-labelledby="story-title"><div class="wrapper split"><Media kind="story" label={t.imageLabel} /><div><p class="eyebrow">02 / {t.story}</p><h2 id="story-title">{t.storyTitle}</h2><p>{t.storyText}</p><a class="text-link" href={pageUrl(locale, 'about')}>{t.storyCta} →</a></div></div></section>
-<section class="section wrapper" aria-labelledby="ingredients-title"><p class="eyebrow">03 / {t.ingredients}</p><h2 id="ingredients-title">{t.ingredientsTitle}</h2><p class="measure">{t.ingredientsText}</p><Ingredients locale={locale} /><a class="text-link" href={pageUrl(locale, 'ingredients')}>{t.nav.ingredients} →</a></section>
-<section class="social-section section" aria-labelledby="social-title"><div class="wrapper"><p class="eyebrow">04 / Fullstack life</p><h2 id="social-title">{t.social}</h2><p class="measure">{t.socialText}</p><div class="social-grid">{t.socialLabels.map(label => <Media kind="social" label={label + ' · ' + t.imageLabel} />)}</div></div></section>
+<section class="section wrapper" aria-labelledby="home-locations"><p class="eyebrow">01 / {t.nav.locations}</p><h2 id="home-locations">{t.locationsTitle}</h2><Locations locale={locale} /></section>
+<section class="section wrapper" aria-labelledby="burger-title"><div class="section-heading"><div><p class="eyebrow">02 / {t.nav.menu}</p><h2 id="burger-title">{t.showcase}</h2><p>{t.showcaseText}</p></div><a class="text-link" href={pageUrl(locale, 'menu')}>{t.menuCta} →</a></div><BurgerGrid locale={locale} /></section>
+<section class="story-section section" aria-labelledby="story-title"><div class="wrapper measure"><p class="eyebrow">03 / {t.story}</p><h2 id="story-title">{t.storyTitle}</h2><p>{t.storyText}</p><a class="text-link" href={pageUrl(locale, 'about')}>{t.storyCta} →</a></div></section>

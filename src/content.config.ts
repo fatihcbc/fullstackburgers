@@ -11,7 +11,7 @@ const common = {
 };
 const burgers = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/burgers' }),
-  schema: ({ image }) => z.object({ ...common, order: z.number().int().default(0), image: image().optional(), imageAlt: z.string().optional(), allergens: z.array(z.string()).default([]) }),
+  schema: z.object({ ...common, order: z.number().int().default(0), priceCents: z.number().int().positive(), comboPriceCents: z.number().int().positive() }),
 });
 const announcements = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/announcements' }),

@@ -1,0 +1,12 @@
+---
+import { Picture } from 'astro:assets';
+import truck from '../../public/media/truck-1.jpeg';
+import { copy, type Locale } from '../i18n';
+interface Props { locale: Locale; eager?: boolean; }
+const { locale, eager = false } = Astro.props;
+const t = copy[locale];
+---
+<figure class="truck-photo">
+  <Picture src={truck} widths={[480, 800, 1200, 1600]} sizes="(min-width: 64rem) 45vw, calc(100vw - 32px)" formats={['webp']} fallbackFormat="jpeg" quality={82} alt={t.truckAlt} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : 'auto'} />
+  <figcaption>{t.truckCaption}</figcaption>
+</figure>

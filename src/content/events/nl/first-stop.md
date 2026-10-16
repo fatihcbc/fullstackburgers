@@ -3,6 +3,7 @@ locale: nl
 translationKey: first-stop
 title: Onze eerste stop
 description: Hier verschijnt binnenkort ons eerste bevestigde evenement.
+draft: true
 status: unconfirmed
 placeholder: true
 ---

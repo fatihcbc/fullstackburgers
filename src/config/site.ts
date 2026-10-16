@@ -5,13 +5,8 @@ export const site = {
   url: deployment.url,
   timeZone: 'Europe/Amsterdam',
   // Add verified address, telephone, opening hours and social URLs before launch.
-  business: { '@type': 'FoodEstablishment' },
+  business: { '@type': 'FoodEstablishment', servesCuisine: 'Smash burgers', areaServed: { '@type': 'City', name: 'Almere' } },
 };
-// Replace these files or paths; presentation does not depend on final artwork.
 export const assets = {
-  hero: '/media/burger-placeholder.svg',
-  burger: '/media/burger-placeholder.svg',
-  story: '/media/story-placeholder.svg',
-  social: '/media/social-placeholder.svg',
-  socialCard: '/media/social-card.svg',
+  socialCard: '/media/truck-1.jpeg',
 };
