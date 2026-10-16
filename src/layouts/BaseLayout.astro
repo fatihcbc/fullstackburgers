@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import FontPreload from '../components/FontPreload.astro';
+import FaviconHead from '../components/FaviconHead.astro';
 import { copy, locales, pageUrl, type Locale, type Page } from '../i18n';
 import { site, assets, deployment } from '../config/site';
 import '../styles/global.css';
@@ -35,7 +36,7 @@ const structuredData = { '@context': 'https://schema.org', ...site.business, '@i
     <meta property="og:locale:alternate" content={locale === 'nl' ? 'en_GB' : 'nl_NL'} />
     <meta property="og:image" content={new URL(assets.socialCard, site.url)} />
     <meta property="og:image:alt" content={t.truckAlt} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <FaviconHead />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\u003c')} />
   </head>
   <body><Header locale={locale} page={page} /><main id="main" tabindex="-1"><slot /></main><Footer locale={locale} /></body>

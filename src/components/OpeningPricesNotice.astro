@@ -1,0 +1,15 @@
+---
+import { copy, type Locale } from '../i18n';
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const t = copy[locale];
+---
+<div class="opening-notice">
+  <p class="opening-badge">{t.openingPrices}</p>
+  <p class="opening-note">{t.openingPricesNote}</p>
+</div>
+<style>
+  .opening-notice { margin-bottom: 1.5rem; }
+  .opening-badge { display: inline-block; padding: .45rem .8rem; background: var(--brand-yellow); color: var(--brand-black); font-weight: 800; font-size: .85rem; line-height: 1.5; letter-spacing: .06em; box-shadow: 4px 4px 0 var(--brand-gray); }
+  .opening-note { max-width: 46rem; margin-top: 1rem; color: var(--brand-gray); font-size: .9rem; line-height: 1.65; }
+</style>

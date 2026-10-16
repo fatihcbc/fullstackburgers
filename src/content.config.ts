@@ -11,7 +11,11 @@ const common = {
 };
 const burgers = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/burgers' }),
-  schema: z.object({ ...common, order: z.number().int().default(0), priceCents: z.number().int().positive(), comboPriceCents: z.number().int().positive() }),
+  schema: z.object({
+    ...common, order: z.number().int().default(0),
+    openingPriceCents: z.number().int().positive(), openingComboPriceCents: z.number().int().positive(),
+    standardPriceCents: z.number().int().positive(), standardComboPriceCents: z.number().int().positive(),
+  }).refine(v => v.standardPriceCents >= v.openingPriceCents && v.standardComboPriceCents >= v.openingComboPriceCents, { message: 'Future standard prices must not be lower than opening prices' }),
 });
 const announcements = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/announcements' }),

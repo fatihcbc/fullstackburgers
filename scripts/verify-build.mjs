@@ -6,6 +6,30 @@ const deployment = resolveDeployment(process.env);
 const dist = resolve('dist');
 async function walk(dir) { return (await Promise.all((await readdir(dir, { withFileTypes: true })).map(e => e.isDirectory() ? walk(join(dir, e.name)) : join(dir, e.name)))).flat(); }
 const files = await walk(dist);
+const originalMascot = await readFile('public/media/pixel/10x10 cm drukwerk.svg', 'utf8');
+const favicon = await readFile(join(dist, 'icons/favicon.svg'), 'utf8');
+for (const shape of originalMascot.matchAll(/<(?:path|polygon)\b[^>]*\/>/g)) assert(favicon.includes(shape[0]), 'Favicon must preserve original face features');
+assert(favicon.includes('clip-path="url(#face)"'), 'Favicon should isolate the original face');
+for (const size of [16, 32, 48, 180]) {
+  const name = size === 180 ? 'apple-touch-icon.png' : 'favicon-' + size + '.png';
+  const png = await readFile(join(dist, 'icons', name));
+  assert.equal(png.subarray(1, 4).toString('ascii'), 'PNG');
+  assert.equal(png.readUInt32BE(16), size);
+  assert.equal(png.readUInt32BE(20), size);
+}
+const ico = await readFile(join(dist, 'favicon.ico'));
+assert.equal(ico.readUInt16LE(0), 0);
+assert.equal(ico.readUInt16LE(2), 1);
+assert.equal(ico.readUInt16LE(4), 3);
+for (const [index, size] of [16, 32, 48].entries()) {
+  const entry = 6 + index * 16;
+  assert.equal(ico[entry], size);
+  assert.equal(ico[entry + 1], size);
+  const offset = ico.readUInt32LE(entry + 12);
+  const length = ico.readUInt32LE(entry + 8);
+  assert.deepEqual(ico.subarray(offset, offset + length), await readFile(join(dist, 'icons/favicon-' + size + '.png')));
+}
+await assert.rejects(access(join(dist, 'favicon.svg')), 'Old generic favicon must be removed');
 const fontFiles = files.filter(file => file.endsWith('.woff2'));
 assert.equal(fontFiles.length, 4, 'Expected normal/italic Latin and Latin Extended Roboto faces');
 for (const file of fontFiles) {
@@ -52,6 +76,8 @@ for (const file of files.filter(f => f.endsWith('.html'))) {
   const html = await readFile(file, 'utf8');
   const isRoot = file === join(dist, 'index.html');
   const is404 = file === join(dist, '404.html');
+  for (const icon of ['/favicon.ico', '/icons/favicon.svg', '/icons/favicon-32.png', '/icons/apple-touch-icon.png']) assert(html.includes('href="' + icon + '"'), 'Missing favicon reference: ' + file);
+  assert(!html.includes('href="/favicon.svg"'), 'Generic favicon reference remains');
   assert(!/\/(nl\/ingredienten|en\/ingredients)\//.test(html), 'Removed Ingredients route is still linked');
   assert(!/placeholder\.svg|social-card\.svg|tijdelijk beeld|temporary brand artwork|voorbeeldburger|sample burger|The Classic|The Green|The Special/i.test(html), 'Placeholder content remains: ' + file);
   assert(html.includes('href="/fonts/roboto/roboto-latin-normal.woff2"'), 'Missing local font preload: ' + file);
@@ -82,14 +108,39 @@ for (const locale of ['nl', 'en']) {
   assert(home.includes('/media/pixel/10x10%20cm%20drukwerk.svg'), 'Missing original mascot');
   assert(home.includes('truck-1.') && home.includes('type="image/webp"') && home.includes('fetchpriority="high"'), 'Missing optimized original truck hero');
   assert(home.includes(locale === 'nl' ? 'Smashburgers' : 'Almere-based smash burger food truck'));
-  for (const html of [home, locations]) {
-    for (const [day, name, query] of [
-      [locale === 'nl' ? 'Zondag' : 'Sunday', 'Almere Muziekwijk', 'Almere Muziekwijk'],
-      [locale === 'nl' ? 'Maandag' : 'Monday', 'Homerusplein, Almere Poort', 'Homerusplein, Almere Poort'],
+  const prototype = await readFile(prototypePaths[locale === 'nl' ? 0 : 1], 'utf8');
+  const currency = cents => new Intl.NumberFormat(locale === 'nl' ? 'nl-NL' : 'en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+  for (const html of [home, menu, prototype]) {
+    assert(html.includes(locale === 'nl' ? 'OPENINGSPRIJZEN' : 'OPENING PRICES'), 'Missing opening prices badge');
+    assert(html.includes(locale === 'nl' ? 'De standaardprijzen hieronder gelden later.' : 'The standard prices below apply later.'), 'Future standard pricing needs explanation');
+    assert(!/<(?:del|s)\b/.test(html), 'Opening prices must not use previous-price strikethrough');
+    for (const [size, burger, combo, standardBurger, standardCombo] of [
+      ['Single', 795, 1095, 895, 1295], ['Double', 995, 1295, 1095, 1495], ['Triple', 1195, 1495, 1295, 1695],
+    ]) {
+      const card = [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].find(match => match[1].includes(size + ' Smash Burger'))?.[1];
+      assert(card, 'Missing priced burger card: ' + size);
+      const opening = [...card.matchAll(/class="price-line opening-price"[^>]*>[\s\S]*?<strong[^>]*>([^<]+)<\/strong>/g)].map(match => match[1]);
+      const standard = [...card.matchAll(/class="price-line future-price"[^>]*>[\s\S]*?<span class="price-value"[^>]*>([^<]+)<\/span>/g)].map(match => match[1]);
+      assert.deepEqual(opening, [currency(burger), currency(combo)], 'Wrong opening prices: ' + size);
+      assert.deepEqual(standard, [currency(standardBurger), currency(standardCombo)], 'Wrong future standard prices: ' + size);
+      assert(card.includes(locale === 'nl' ? 'Later standaard' : 'Future standard price'), 'Missing future standard label');
+    }
+  }
+  for (const html of [home, locations, prototype]) {
+    for (const [day, name, url] of [
+      [locale === 'nl' ? 'Zondag' : 'Sunday', 'Almere Muziekwijk', 'https://maps.app.goo.gl/EsycCHAQrW5B5s397'],
+      [locale === 'nl' ? 'Maandag' : 'Monday', 'Homerusplein, Almere Poort', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Homerusplein, Almere Poort')],
     ]) {
       assert(html.includes(day) && html.includes(name), 'Missing regular location');
-      assert(html.includes('https://www.google.com/maps/search/?api=1&amp;query=' + encodeURIComponent(query)), 'Missing Google Maps search link');
+      const link = [...html.matchAll(/<a\b([^>]+)>([\s\S]*?)<\/a>/g)].find(match => match[1].includes('href="' + url.replaceAll('&', '&amp;') + '"'));
+      assert(link, 'Incorrect directions URL for ' + name);
+      assert(link[1].includes('target="_blank"') && link[1].includes('rel="noopener noreferrer"'), 'Directions must safely open a new tab');
+      const label = locale === 'nl' ? 'Route bekijken' : 'Get directions';
+      assert(link[2].includes(label), 'Wrong directions button label');
+      assert(link[1].includes('aria-label="' + label + ': ' + name), 'Directions need a location-specific accessible name');
     }
+    assert(!html.includes('query=Almere%20Muziekwijk'), 'Sunday must use the exact supplied Maps URL');
+    assert(!/Bekijk op Google Maps|View on Google Maps/.test(html), 'Old directions label remains');
     assert(!/openingHours|\d{1,2}:\d{2}/.test(html), 'Opening times were not supplied');
   }
   assert(menu.includes('/media/posters-01.jpg') && menu.includes('posters-01.') && menu.includes('type="image/webp"'), 'Missing official optimized poster and full-size link');
