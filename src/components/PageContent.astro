@@ -1,0 +1,18 @@
+---
+import { copy, type Locale, type Page } from '../i18n';
+import Home from './Home.astro';
+import Media from './Media.astro';
+import BurgerGrid from './BurgerGrid.astro';
+import Ingredients from './Ingredients.astro';
+import EventList from './EventList.astro';
+interface Props { locale: Locale; page: Page; }
+const { locale, page } = Astro.props; const t = copy[locale];
+const intros = { home: t.intro, menu: t.menuIntro, about: t.aboutIntro, ingredients: t.ingredientsText, locations: t.locationsIntro };
+---
+{page === 'home' ? <Home locale={locale} /> : <>
+  <section class="page-heading wrapper"><p class="eyebrow">Fullstack Burgers</p><h1>{t.nav[page]}</h1><p class="intro">{intros[page]}</p></section>
+  {page === 'menu' && <section class="section wrapper" aria-labelledby="menu-burgers"><h2 id="menu-burgers">{t.showcase}</h2><BurgerGrid locale={locale} /></section>}
+  {page === 'about' && <section class="section wrapper split" aria-labelledby="about-story"><Media kind="story" label={t.imageLabel} /><div><h2 id="about-story">{t.aboutDetail}</h2><p>{t.aboutBody}</p></div></section>}
+  {page === 'ingredients' && <section class="section wrapper" aria-labelledby="ingredient-detail"><h2 id="ingredient-detail">{t.ingredientsTitle}</h2><Ingredients locale={locale} /><Media kind="story" label={t.imageLabel} /></section>}
+  {page === 'locations' && <section class="section wrapper" aria-labelledby="events-title"><h2 id="events-title">{t.eventsTitle}</h2><p class="measure">{t.stopText}</p><EventList locale={locale} /></section>}
+</>}

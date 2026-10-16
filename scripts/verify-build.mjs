@@ -1,0 +1,63 @@
+import { readFile, readdir, access } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import assert from 'node:assert/strict';
+import { resolveDeployment } from '../config/environment.mjs';
+const deployment = resolveDeployment(process.env);
+const dist = resolve('dist');
+async function walk(dir) { return (await Promise.all((await readdir(dir, { withFileTypes: true })).map(e => e.isDirectory() ? walk(join(dir, e.name)) : join(dir, e.name)))).flat(); }
+const files = await walk(dist);
+const pages = files.filter(f => f.endsWith('.html') && !f.endsWith('404.html') && f !== join(dist, 'index.html'));
+assert.equal(pages.length, 10, 'Expected five pages in both languages');
+const titles = new Set(); const descriptions = new Set();
+for (const file of pages) {
+  const html = await readFile(file, 'utf8');
+  const title = html.match(/<title>(.*?)<\/title>/s)?.[1];
+  assert(title && !titles.has(title), 'Missing or duplicate title: ' + file); titles.add(title);
+  const description = html.match(/<meta name="description" content="([^"]+)"/s)?.[1];
+  assert(description && !descriptions.has(description), 'Missing or duplicate description: ' + file); descriptions.add(description);
+  assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1, 'Expected one h1: ' + file);
+  assert.match(html, /<html lang="(nl|en)"/);
+  assert(html.includes('rel="canonical" href="' + deployment.url + '/'), 'Wrong canonical origin');
+  for (const lang of ['nl', 'en', 'x-default']) assert(html.includes('hreflang="' + lang + '"'), 'Missing alternate ' + lang);
+  for (const tag of ['og:title', 'og:description', 'og:url', 'og:image']) assert(html.includes('property="' + tag + '"'), 'Missing ' + tag);
+  const json = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)?.[1];
+  assert(json, 'Missing structured data'); assert.equal(JSON.parse(json).name, 'Fullstack Burgers');
+  for (const match of html.matchAll(/(?:href|src)="(\/[^"#?]*)/g)) {
+    const target = decodeURI(match[1]);
+    assert(!target.startsWith('//'), 'Unexpected protocol-relative URL');
+    await access(join(dist, target, target.endsWith('/') ? 'index.html' : ''));
+  }
+  for (const img of html.matchAll(/<img\b[^>]*>/g)) { assert(/\balt(?:\s|=|>)/.test(img[0]), 'Missing image alt'); assert(/\bwidth=/.test(img[0]) && /\bheight=/.test(img[0]), 'Missing image dimensions'); }
+  assert(!/<script\b[^>]*src=/.test(html), 'Phase 1 should ship no client JavaScript');
+}
+const sitemap = await readFile(join(dist, 'sitemap.xml'), 'utf8');
+assert.equal((sitemap.match(/<loc>/g) ?? []).length, deployment.staging ? 0 : 10);
+const robots = await readFile(join(dist, 'robots.txt'), 'utf8');
+assert.equal(robots, 'User-agent: *\nAllow: /\n' + (deployment.staging ? '' : 'Sitemap: ' + deployment.url + '/sitemap.xml\n'));
+assert.equal((await readFile('CNAME', 'utf8')).trim(), 'www.fullstackburgers.nl');
+assert.equal((await readFile('public/CNAME', 'utf8')).trim(), 'www.fullstackburgers.nl');
+for (const file of files.filter(f => f.endsWith('.html'))) {
+  const html = await readFile(file, 'utf8');
+  const isRoot = file === join(dist, 'index.html');
+  const is404 = file === join(dist, '404.html');
+  if (deployment.staging) assert(html.includes('<meta name="robots" content="noindex,nofollow"'), 'Missing staging noindex: ' + file);
+  else if (isRoot) assert(html.includes('<meta name="robots" content="noindex,follow"'));
+  else if (is404) assert(html.includes('<meta name="robots" content="noindex"'));
+  else assert(!html.includes('name="robots"'), 'Production page unexpectedly restricted');
+  const otherOrigin = deployment.staging ? 'https://www.fullstackburgers.nl' : 'https://beta.fullstackburgers.nl';
+  assert(!html.includes(otherOrigin), 'Mixed environment URLs: ' + file);
+  for (const match of html.matchAll(/https:\/\/(?:www|beta)\.fullstackburgers\.nl[^\s"<]*/g)) {
+    const url = new URL(match[0]);
+    if (url.hash) continue;
+    await access(join(dist, decodeURI(url.pathname), url.pathname.endsWith('/') ? 'index.html' : ''));
+  }
+}
+if (deployment.staging) {
+  assert.equal(await readFile(join(dist, '_headers'), 'utf8'), '/*\n  X-Robots-Tag: noindex, nofollow\n');
+  await assert.rejects(access(join(dist, 'CNAME')));
+} else {
+  assert.equal((await readFile(join(dist, 'CNAME'), 'utf8')).trim(), 'www.fullstackburgers.nl');
+  await assert.rejects(access(join(dist, '_headers')));
+  for (const loc of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)) assert(loc[1].startsWith(deployment.url + '/'));
+}
+console.log('Verified ' + deployment.environment + ': 12 HTML pages, localized SEO, absolute/local links and assets, indexing policy, sitemap, robots, headers and preserved GitHub Pages CNAME.');

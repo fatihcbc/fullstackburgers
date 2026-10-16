@@ -1,0 +1,13 @@
+---
+import { getCollection, render } from 'astro:content';
+import Media from './Media.astro';
+import { copy, type Locale } from '../i18n';
+interface Props { locale: Locale; }
+const { locale } = Astro.props; const t = copy[locale];
+const entries = await getCollection('burgers', ({ data }) => data.locale === locale && !data.draft);
+const burgers = await Promise.all(entries.sort((a,b) => a.data.order - b.data.order).map(async entry => ({ entry, ...await render(entry) })));
+---
+<div class="burger-grid">{burgers.map(({ entry, Content }) => <article class="burger-card">
+  <Media src={entry.data.image} alt={entry.data.imageAlt ?? ''} label={t.imageLabel} />
+  <div class="card-body"><div class="card-heading"><h3>{entry.data.title}</h3>{entry.data.placeholder && <span class="tag">{t.placeholder}</span>}</div><p>{entry.data.description}</p><div class="prose"><Content /></div></div>
+</article>)}</div>

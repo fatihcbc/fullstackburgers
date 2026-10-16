@@ -1,0 +1,10 @@
+---
+import { copy, pages, pageUrl, type Locale } from '../i18n';
+interface Props { locale: Locale; }
+const { locale } = Astro.props; const t = copy[locale];
+---
+<footer class="site-footer"><div class="wrapper footer-grid">
+  <div><a class="wordmark" href={pageUrl(locale, 'home')}>FULLSTACK<span>BURGERS</span></a><p>{t.footer}</p></div>
+  <nav aria-label="Footer"><ul>{pages.map(p => <li><a href={pageUrl(locale, p)}>{t.nav[p]}</a></li>)}</ul></nav>
+  <p class="small">© {new Date().getFullYear()} Fullstack Burgers<br />{t.preview}</p>
+</div></footer>

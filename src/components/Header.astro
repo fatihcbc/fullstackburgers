@@ -1,0 +1,17 @@
+---
+import { copy, locales, pages, pageUrl, type Locale, type Page } from '../i18n';
+interface Props { locale: Locale; page: Page; }
+const { locale, page } = Astro.props;
+const t = copy[locale];
+---
+<a class="skip-link" href="#main">{t.skip}</a>
+<div class="preview-note">{t.preview}</div>
+<header class="site-header wrapper">
+  <a class="wordmark" href={pageUrl(locale, 'home')} aria-label="Fullstack Burgers home">FULLSTACK<span>BURGERS</span></a>
+  <nav aria-label={locale === 'nl' ? 'Hoofdnavigatie' : 'Main navigation'}>
+    <ul class="nav-list">{pages.map(p => <li><a href={pageUrl(locale, p)} aria-current={page === p ? 'page' : undefined}>{t.nav[p]}</a></li>)}</ul>
+  </nav>
+  <nav class="language-nav" aria-label={locale === 'nl' ? 'Taal' : 'Language'}>
+    {locales.map(l => <a href={pageUrl(l, page)} lang={l} hreflang={l} aria-current={locale === l ? 'true' : undefined} aria-label={l === 'nl' ? 'Nederlands' : 'English'}>{l.toUpperCase()}</a>)}
+  </nav>
+</header>

@@ -1,0 +1,15 @@
+---
+import { getCollection, render } from 'astro:content';
+import { copy, type Locale } from '../i18n';
+import { site } from '../config/site';
+interface Props { locale: Locale; }
+const { locale } = Astro.props; const t = copy[locale];
+const entries = await getCollection('events', ({ data }) => data.locale === locale && !data.draft);
+const events = await Promise.all(entries.sort((a,b) => (a.data.startsAt ?? '9999').localeCompare(b.data.startsAt ?? '9999')).map(async entry => ({ entry, ...await render(entry) })));
+---
+<div class="event-list">{events.map(({ entry, Content }) => <article class="event-card">
+  <p class="eyebrow">{entry.data.placeholder ? t.placeholder : entry.data.status === 'confirmed' ? (locale === 'nl' ? 'Bevestigd' : 'Confirmed') : entry.data.status === 'cancelled' ? (locale === 'nl' ? 'Geannuleerd' : 'Cancelled') : t.unconfirmed}</p>
+  <h3>{entry.data.title}</h3><p>{entry.data.description}</p>
+  {entry.data.startsAt ? <p><time datetime={entry.data.startsAt}>{new Intl.DateTimeFormat(locale === 'nl' ? 'nl-NL' : 'en-GB', { dateStyle: 'long', timeStyle: 'short', timeZone: site.timeZone }).format(new Date(entry.data.startsAt))}</time> · Europe/Amsterdam</p> : <p class="small">{t.noDate} · {t.unconfirmed}</p>}
+  {entry.data.location && <p>{entry.data.location}</p>}{entry.data.address && <p>{entry.data.address}</p>}<div class="prose"><Content /></div>
+</article>)}</div>
