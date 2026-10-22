@@ -182,7 +182,7 @@ for (const locale of ['nl', 'en']) {
     assert(!/Bekijk op Google Maps|View on Google Maps/.test(html), 'Old directions label remains');
     assert(!/openingHours|\d{1,2}:\d{2}/.test(html), 'Opening times were not supplied');
   }
-  assert(menu.includes('/media/posters-01.jpg') && menu.includes('posters-01.') && menu.includes('type="image/webp"'), 'Missing official optimized poster and full-size link');
+  assert(menu.includes('/media/posters-03-lowsized.jpeg') && menu.includes('posters-03-lowsized.') && menu.includes('type="image/webp"'), 'Missing official optimized poster and full-size link');
   for (const product of ['Single Smash Burger', 'Double Smash Burger', 'Triple Smash Burger']) assert(menu.includes(product));
   for (const cents of [795, 1095, 995, 1295, 1195, 1495, 350, 325]) {
     const price = new Intl.NumberFormat(locale === 'nl' ? 'nl-NL' : 'en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
@@ -190,7 +190,7 @@ for (const locale of ['nl', 'en']) {
   }
   assert(menu.includes(locale === 'nl' ? 'burger, friet en frisdrank' : 'burger, fries and a soft drink'), 'Missing combo contents');
 }
-for (const relative of ['media/truck-1.jpeg', 'media/truck-2.png', 'media/posters-01.jpg', 'media/pixel/10x10 cm drukwerk.svg', 'media/logo/10x10 cm logo drukwerk.svg']) {
+for (const relative of ['media/truck-1.jpeg', 'media/truck-2.png', 'media/posters-01.jpg', 'media/posters-03-lowsized.jpeg', 'media/pixel/10x10 cm drukwerk.svg', 'media/logo/10x10 cm logo drukwerk.svg']) {
   assert.deepEqual(await readFile(join(dist, relative)), await readFile(join('public', relative)), 'Original asset changed in output');
 }
 for (const [index, file] of prototypePaths.entries()) {

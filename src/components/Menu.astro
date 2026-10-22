@@ -1,6 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
-import poster from '../../public/media/posters-01.jpg';
+import poster from '../../public/media/posters-03-lowsized.jpeg';
 import BurgerGrid from './BurgerGrid.astro';
 import OpeningPricesNotice from './OpeningPricesNotice.astro';
 import { sides, formatPrice } from '../config/business';
@@ -12,8 +12,8 @@ const t = copy[locale];
 <section class="section wrapper menu-layout" aria-labelledby="menu-title">
   <div class="menu-opening"><OpeningPricesNotice locale={locale} /></div>
   <div class="menu-poster"><h2 id="menu-title">{t.posterTitle}</h2>
-    <a class="poster-image" href="/media/posters-01.jpg" aria-label={t.posterOpen}><Picture src={poster} widths={[480, 960, 1440, 2200]} sizes="(min-width: 64rem) 50vw, calc(100vw - 32px)" formats={['webp']} fallbackFormat="jpeg" quality={88} alt={t.posterAlt} loading="eager" fetchpriority="high" /></a>
-    <a class="text-link" href="/media/posters-01.jpg">{t.posterOpen} ↗</a>
+    <a class="poster-image" href="/media/posters-03-lowsized.jpeg" aria-label={t.posterOpen}><Picture src={poster} widths={[480, 960, 1440, 2200]} sizes="(min-width: 64rem) 50vw, calc(100vw - 32px)" formats={['webp']} fallbackFormat="jpeg" quality={88} alt={t.posterAlt} loading="eager" fetchpriority="high" /></a>
+    <a class="text-link" href="/media/posters-03-lowsized.jpeg">{t.posterOpen} ↗</a>
   </div>
   <div class="menu-prices"><h2>{t.showcase}</h2><BurgerGrid locale={locale} showNotice={false} />
     <h3 class="sides-title">{t.sidesTitle}</h3><dl class="side-prices">{sides.map(side => <div><dt>{side.name[locale]}</dt><dd>{formatPrice(side.priceCents, locale)}</dd></div>)}</dl>
