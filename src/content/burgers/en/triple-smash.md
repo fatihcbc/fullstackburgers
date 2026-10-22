@@ -9,6 +9,7 @@ openingComboPriceCents: 1495
 standardPriceCents: 1295
 standardComboPriceCents: 1695
 menu:
+  shortDescription: Three beef smash patties (min. 60 g each), 2 Cheddar slices, 1 young Dutch Gouda slice, aioli, fresh onion, dill pickles, crispy fried onions and our signature burger sauce.
   description: Three juicy beef smash patties (at least 60 g each), two slices of melted Cheddar and one slice of young Dutch Gouda, with creamy aioli, fresh raw onion, sliced dill pickles, crispy fried onions and our signature burger sauce, served in a soft burger bun.
   priceCents: 1195
   comboPriceCents: 1695

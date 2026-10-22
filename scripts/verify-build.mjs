@@ -149,7 +149,7 @@ for (const locale of ['nl', 'en']) {
   assert(home.includes(locale === 'nl' ? 'Smashburgers' : 'Almere-based smash burger food truck'));
   const prototype = await readFile(prototypePaths[locale === 'nl' ? 0 : 1], 'utf8');
   const currency = cents => new Intl.NumberFormat(locale === 'nl' ? 'nl-NL' : 'en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
-  for (const html of [home, prototype]) {
+  for (const html of [prototype]) {
     assert(html.includes(locale === 'nl' ? 'OPENINGSPRIJZEN' : 'OPENING PRICES'), 'Missing opening prices badge');
     assert(html.includes(locale === 'nl' ? 'De standaardprijzen hieronder gelden later.' : 'The standard prices below apply later.'), 'Future standard pricing needs explanation');
     assert(!/<(?:del|s)\b/.test(html), 'Opening prices must not use previous-price strikethrough');
@@ -164,6 +164,36 @@ for (const locale of ['nl', 'en']) {
       assert.deepEqual(standard, [currency(standardBurger), currency(standardCombo)], 'Wrong future standard prices: ' + size);
       assert(card.includes(locale === 'nl' ? 'Later standaard' : 'Future standard price'), 'Missing future standard label');
     }
+  }
+  const homePages = locale === 'nl' ? [home, await readFile(join(dist, 'index.html'), 'utf8')] : [home];
+  for (const html of homePages) {
+    assert(!/class="price-line future-price"|Future standard|Later standaard|standaardprijzen|standard prices below|OPENING PRICES|OPENINGSPRIJZEN/.test(html), 'Homepage must show current prices only');
+    const burgerSection = html.match(/<section\b[^>]*aria-labelledby="burger-title"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+    assert(burgerSection, 'Missing homepage burger section');
+    const cards = [...burgerSection.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map(match => match[1]);
+    assert.equal(cards.length, 3, 'Homepage must retain the three smash burgers');
+    for (const [index, [name, burger, combo]] of [
+      ['Single Smash Burger', 795, 1295], ['Double Smash Burger', 995, 1495], ['Triple Smash Burger', 1195, 1695],
+    ].entries()) {
+      const card = cards.find(card => card.includes(name));
+      assert(card, 'Missing homepage burger: ' + name);
+      const menuCard = [...menu.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].find(match => match[1].includes(name))?.[1];
+      const prices = content => [...content.matchAll(/<strong[^>]*>([^<]+)<\/strong>/g)].map(match => match[1]);
+      assert.deepEqual(prices(card), [currency(burger), currency(combo)], 'Wrong homepage burger/combo prices: ' + name);
+      assert.deepEqual(prices(card), prices(menuCard), 'Homepage and menu prices must match: ' + name);
+      const description = card.match(/<p class="burger-description"[^>]*>(.*?)<\/p>/s)?.[1];
+      const fullDescription = menuCard.match(/<p class="burger-description"[^>]*>(.*?)<\/p>/s)?.[1];
+      assert(description && description.length < fullDescription.length, 'Homepage needs a shorter description: ' + name);
+      const ingredients = locale === 'nl'
+        ? [['Eén rundvlees-smashburger', 'Twee rundvlees-smashburgers', 'Drie rundvlees-smashburgers'][index], index ? 'elk min. 60 g' : 'min. 60 g', index === 2 ? '2 plakken Cheddar' : '1 plak Cheddar', 'aioli', 'verse ui', 'dille-augurk', 'krokant gebakken uitjes', 'onze eigen burgersaus']
+        : [['One beef smash patty', 'Two beef smash patties', 'Three beef smash patties'][index], index ? 'min. 60 g each' : 'min. 60 g', index === 2 ? '2 Cheddar slices' : '1 Cheddar slice', 'aioli', 'fresh onion', 'dill pickles', 'crispy fried onions', 'our signature burger sauce'];
+      for (const ingredient of ingredients) assert(description.includes(ingredient), 'Missing homepage ingredient for ' + name + ': ' + ingredient);
+      if (index) assert(description.includes(locale === 'nl' ? '1 plak jonge Goudse kaas' : '1 young Dutch Gouda slice'), 'Homepage Gouda quantity is incorrect: ' + name);
+      else assert(!/Gouda|Goudse/.test(description), 'Single must only contain Cheddar');
+    }
+    const note = burgerSection.match(/<p class="combo-note"[^>]*>(.*?)<\/p>/s)?.[1];
+    assert(note?.includes(locale === 'nl' ? 'gekozen burger, friet en een gewone frisdrank' : 'chosen burger, fries and a regular soft drink'), 'Homepage combo contents must be clear');
+    assert(note.includes('Red Bull') && note.includes('+' + currency(100)), 'Homepage needs the Red Bull upgrade price');
   }
   for (const html of [home, locations, prototype]) {
     for (const [day, name, url] of [

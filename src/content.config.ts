@@ -19,6 +19,7 @@ const burgers = defineCollection({
     menuOnly: z.boolean().default(false),
     menu: z.object({
       description: z.string(),
+      shortDescription: z.string().optional(),
       priceCents: z.number().int().positive(),
       comboPriceCents: z.number().int().positive(),
     }).optional(),

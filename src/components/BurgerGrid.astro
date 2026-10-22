@@ -2,17 +2,19 @@
 import { getCollection } from 'astro:content';
 import { copy, type Locale } from '../i18n';
 import { formatPrice } from '../config/business';
+import { redBullComboSurchargeCents } from '../config/menu';
 import OpeningPricesNotice from './OpeningPricesNotice.astro';
-interface Props { locale: Locale; retro?: boolean; showNotice?: boolean; currentMenu?: boolean; }
-const { locale, retro = false, showNotice = true, currentMenu = false } = Astro.props;
+interface Props { locale: Locale; retro?: boolean; showNotice?: boolean; currentMenu?: boolean; homepage?: boolean; }
+const { locale, retro = false, showNotice = true, currentMenu = false, homepage = false } = Astro.props;
+const currentPrices = currentMenu || homepage;
 const t = copy[locale];
-const burgers = (await getCollection('burgers', ({ data }) => data.locale === locale && !data.draft && !data.placeholder && (currentMenu ? !!data.menu : !data.menuOnly))).sort((a, b) => a.data.order - b.data.order);
+const burgers = (await getCollection('burgers', ({ data }) => data.locale === locale && !data.draft && !data.placeholder && (currentPrices ? !!data.menu && (!homepage || !data.menuOnly) : !data.menuOnly))).sort((a, b) => a.data.order - b.data.order);
 ---
-{showNotice && !currentMenu && <OpeningPricesNotice locale={locale} />}
+{showNotice && !currentPrices && <OpeningPricesNotice locale={locale} />}
 <div class={retro ? 'retro-menu-grid' : 'burger-grid'}>{burgers.map(({ data }) => <article class={retro ? 'retro-menu-card' : 'burger-card'}>
   <div class={retro ? undefined : 'card-body'}>
-    <h3>{data.title}</h3><p class="burger-description">{currentMenu ? data.menu!.description : data.description}</p>
-    <dl class="burger-prices">{currentMenu ? [
+    <h3>{data.title}</h3><p class="burger-description">{homepage ? (data.menu!.shortDescription ?? data.menu!.description) : currentMenu ? data.menu!.description : data.description}</p>
+    <dl class="burger-prices">{currentPrices ? [
       { label: t.burger, price: data.menu!.priceCents },
       { label: t.combo, price: data.menu!.comboPriceCents },
     ].map(option => <div class="price-option"><dt>{option.label}</dt><dd>
@@ -26,7 +28,8 @@ const burgers = (await getCollection('burgers', ({ data }) => data.locale === lo
     </dd></div>)}</dl>
   </div>
 </article>)}</div>
-{!currentMenu && <p class="combo-note">{t.comboIncludes}</p>}
+{homepage && <p class="combo-note">{t.menuComboIncludes} {t.redBullComboSurcharge} +{formatPrice(redBullComboSurchargeCents, locale)}.</p>}
+{!currentPrices && <p class="combo-note">{t.comboIncludes}</p>}
 <style>
   h3 { overflow-wrap: break-word; }
   .burger-description { margin-top: .75rem; }
