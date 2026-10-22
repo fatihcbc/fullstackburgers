@@ -2,33 +2,46 @@
 import { Picture } from 'astro:assets';
 import poster from '../../public/media/posters-03-lowsized.jpeg';
 import BurgerGrid from './BurgerGrid.astro';
-import OpeningPricesNotice from './OpeningPricesNotice.astro';
 import { sides, formatPrice } from '../config/business';
+import { chickenSnacks, drinks, redBullComboSurchargeCents } from '../config/menu';
 import { copy, type Locale } from '../i18n';
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const t = copy[locale];
 ---
 <section class="section wrapper menu-layout" aria-labelledby="menu-title">
-  <div class="menu-opening"><OpeningPricesNotice locale={locale} /></div>
   <div class="menu-poster"><h2 id="menu-title">{t.posterTitle}</h2>
     <a class="poster-image" href="/media/posters-03-lowsized.jpeg" aria-label={t.posterOpen}><Picture src={poster} widths={[480, 960, 1440, 2200]} sizes="(min-width: 64rem) 50vw, calc(100vw - 32px)" formats={['webp']} fallbackFormat="jpeg" quality={88} alt={t.posterAlt} loading="eager" fetchpriority="high" /></a>
     <a class="text-link" href="/media/posters-03-lowsized.jpeg">{t.posterOpen} ↗</a>
   </div>
-  <div class="menu-prices"><h2>{t.showcase}</h2><BurgerGrid locale={locale} showNotice={false} />
-    <h3 class="sides-title">{t.sidesTitle}</h3><dl class="side-prices">{sides.map(side => <div><dt>{side.name[locale]}</dt><dd>{formatPrice(side.priceCents, locale)}</dd></div>)}</dl>
+  <div class="menu-prices"><h2>{t.menuBurgersTitle}</h2><BurgerGrid locale={locale} currentMenu />
+    <p class="combo-note">{t.menuComboIncludes} {t.redBullComboSurcharge} +{formatPrice(redBullComboSurchargeCents, locale)}.</p>
+    <section aria-labelledby="snacks-title">
+      <h2 class="sides-title" id="snacks-title">{t.snacksTitle}</h2>
+      <dl class="side-prices">{chickenSnacks.map(snack => <div><dt>{snack.name} <span class="portion">({snack.pieces} {t.pieces})</span><p class="item-description">{snack.description[locale]}</p></dt><dd>{formatPrice(snack.priceCents, locale)}</dd></div>)}</dl>
+    </section>
+    <section aria-labelledby="sides-title">
+      <h2 class="sides-title" id="sides-title">{t.sidesTitle}</h2>
+      <dl class="side-prices">
+        {sides.filter(side => side.name.en === 'Fries').map(side => <div><dt>{side.name[locale]}</dt><dd>{formatPrice(side.priceCents, locale)}</dd></div>)}
+        {drinks.map(drink => <div><dt>{drink.name}{'detail' in drink && <span class="portion"> ({drink.detail[locale]})</span>}</dt><dd>{formatPrice(drink.priceCents, locale)}</dd></div>)}
+      </dl>
+    </section>
   </div>
 </section>
 <style>
   .menu-layout { display: grid; gap: 3rem; }
   .menu-layout > div { min-width: 0; }
-  .menu-opening { grid-column: 1 / -1; }
   .poster-image { display: block; }
   .poster-image :global(img) { display: block; width: 100%; height: auto; }
   .menu-prices :global(.burger-grid) { grid-template-columns: 1fr; }
   .sides-title { margin-top: 2rem; }
   .side-prices { margin: 1rem 0 0; }
   .side-prices > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; padding: .8rem 0; border-bottom: 1px solid var(--color-line); }
+  .side-prices dt { flex: 1 1 12rem; min-width: 0; }
+  .portion, .item-description, .combo-note { color: var(--brand-gray); font-size: .9rem; }
+  .item-description { margin-top: .4rem; }
+  .combo-note { margin-top: 1rem; }
   dd { margin: 0; color: var(--brand-yellow); font-weight: 700; white-space: nowrap; }
   @media (min-width: 64rem) { .menu-layout { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; } }
 </style>

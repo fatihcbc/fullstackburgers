@@ -149,7 +149,7 @@ for (const locale of ['nl', 'en']) {
   assert(home.includes(locale === 'nl' ? 'Smashburgers' : 'Almere-based smash burger food truck'));
   const prototype = await readFile(prototypePaths[locale === 'nl' ? 0 : 1], 'utf8');
   const currency = cents => new Intl.NumberFormat(locale === 'nl' ? 'nl-NL' : 'en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
-  for (const html of [home, menu, prototype]) {
+  for (const html of [home, prototype]) {
     assert(html.includes(locale === 'nl' ? 'OPENINGSPRIJZEN' : 'OPENING PRICES'), 'Missing opening prices badge');
     assert(html.includes(locale === 'nl' ? 'De standaardprijzen hieronder gelden later.' : 'The standard prices below apply later.'), 'Future standard pricing needs explanation');
     assert(!/<(?:del|s)\b/.test(html), 'Opening prices must not use previous-price strikethrough');
@@ -183,12 +183,47 @@ for (const locale of ['nl', 'en']) {
     assert(!/openingHours|\d{1,2}:\d{2}/.test(html), 'Opening times were not supplied');
   }
   assert(menu.includes('/media/posters-03-lowsized.jpeg') && menu.includes('posters-03-lowsized.') && menu.includes('type="image/webp"'), 'Missing official optimized poster and full-size link');
-  for (const product of ['Single Smash Burger', 'Double Smash Burger', 'Triple Smash Burger']) assert(menu.includes(product));
-  for (const cents of [795, 1095, 995, 1295, 1195, 1495, 350, 325]) {
-    const price = new Intl.NumberFormat(locale === 'nl' ? 'nl-NL' : 'en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
-    assert(menu.includes(price), 'Missing official price ' + price);
+  assert(!/class="price-line future-price"|Future standard|Later standaard|standaardprijzen|future standard prices|OPENING PRICES|OPENINGSPRIJZEN/.test(menu), 'Historical pricing must not appear on the current menu');
+  const burgerCards = [...menu.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map(match => match[1]);
+  assert.equal(burgerCards.length, 4, 'Current menu needs exactly four burgers');
+  for (const [name, burger, combo, patties, cheddar] of [
+    ['Single Smash Burger', 795, 1295, 1, 1],
+    ['Double Smash Burger', 995, 1495, 2, 1],
+    ['Triple Smash Burger', 1195, 1695, 3, 2],
+    ['Crispy Chicken Burger', 995, 1495, 0, 0],
+  ]) {
+    const card = burgerCards.find(card => card.includes(name));
+    assert(card, 'Missing menu burger: ' + name);
+    assert.deepEqual([...card.matchAll(/<strong[^>]*>([^<]+)<\/strong>/g)].map(match => match[1]), [currency(burger), currency(combo)], 'Wrong current burger/combo prices: ' + name);
+    const description = card.match(/<p class="burger-description"[^>]*>(.*?)<\/p>/s)?.[1];
+    assert(description, 'Missing description: ' + name);
+    const ingredients = patties ? (locale === 'nl'
+      ? ['minimaal 60 g', 'Cheddar', 'romige aioli', 'verse rauwe ui', 'plakjes dille-augurk', 'krokant gebakken uitjes', 'onze eigen burgersaus', 'zacht burgerbroodje', ['Eén sappige', 'Twee sappige', 'Drie sappige'][patties - 1], cheddar === 2 ? 'twee plakken' : 'één plak']
+      : ['at least 60 g', 'Cheddar', 'creamy aioli', 'fresh raw onion', 'sliced dill pickles', 'crispy fried onions', 'our signature burger sauce', 'soft burger bun', ['One juicy beef', 'Two juicy beef', 'Three juicy beef'][patties - 1], cheddar === 2 ? 'two slices' : 'one slice'])
+      : (locale === 'nl' ? ['krokante kipfilet', 'romige coleslaw', 'plakjes dille-augurk', 'huisgemaakte honing-mosterdmayonaise', 'zacht burgerbroodje'] : ['crispy chicken fillet', 'creamy coleslaw', 'sliced dill pickles', 'homemade honey mustard mayo', 'soft burger bun']);
+    for (const ingredient of ingredients) assert(description.includes(ingredient), 'Missing ingredient for ' + name + ': ' + ingredient);
+    if (patties > 1) assert(description.includes(locale === 'nl' ? 'één plak jonge Goudse kaas' : 'one slice of young Dutch Gouda'), 'Wrong Gouda quantity: ' + name);
+    if (patties === 1) assert(!/Gouda|Goudse/.test(description), 'Single must only contain Cheddar');
+    if (!patties) assert(!/aioli|raw onion|fried onions|burger sauce|rauwe ui|gebakken uitjes|burgersaus/i.test(description), 'Chicken burger includes excluded ingredients');
+    assert(!/ketchup|mayonnaise/i.test(description), 'Do not replace signature burger sauce with ketchup/mayonnaise');
   }
-  assert(menu.includes(locale === 'nl' ? 'burger, friet en frisdrank' : 'burger, fries and a soft drink'), 'Missing combo contents');
+  const snacks = menu.match(/<section aria-labelledby="snacks-title"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+  assert(snacks, 'Missing chicken snacks section');
+  for (const name of ['Chicken Strips', 'Spicy Chicken Strips', 'Hot Wings']) assert(snacks.includes(name), 'Missing snack: ' + name);
+  assert.equal((snacks.match(new RegExp('4 ' + (locale === 'nl' ? 'stuks' : 'pieces'), 'g')) ?? []).length, 3, 'All three snacks need exactly four pieces');
+  assert.equal((snacks.match(/<dd[^>]*>/g) ?? []).length, 3, 'Each snack needs one price only');
+  assert.deepEqual([...snacks.matchAll(/<dd[^>]*>([^<]+)<\/dd>/g)].map(match => match[1]), Array(3).fill(currency(595)), 'Each snack costs 5.95');
+  assert(!/combo/i.test(snacks), 'Chicken snacks must not offer combos');
+  const sidesAndDrinks = menu.match(/<section aria-labelledby="sides-title"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+  assert(sidesAndDrinks, 'Missing sides and drinks');
+  for (const [name, price] of [[locale === 'nl' ? 'Friet' : 'Fries', 350], ['Coca-Cola', 325], ['Coca-Cola Zero', 325], ['Fernandes', 325], ['Red Bull', 395]]) {
+    const row = [...sidesAndDrinks.matchAll(/<div\b[^>]*>([\s\S]*?)<\/div>/g)].find(match => match[1].includes('>' + name + '<'))?.[1];
+    assert(row?.includes(currency(price)), 'Wrong side/drink price: ' + name);
+  }
+  assert(menu.includes(locale === 'nl' ? 'diverse smaken' : 'assorted flavours'), 'Fernandes needs an assorted flavours label');
+  assert(menu.includes(locale === 'nl' ? 'gekozen burger, friet en een gewone frisdrank' : 'chosen burger, fries and a regular soft drink'), 'Missing combo contents');
+  const comboNote = menu.match(/<p class="combo-note"[^>]*>(.*?)<\/p>/s)?.[1];
+  assert(comboNote?.includes('Red Bull') && comboNote.includes('+' + currency(100)), 'Missing Red Bull combo surcharge');
 }
 for (const relative of ['media/truck-1.jpeg', 'media/truck-2.png', 'media/posters-01.jpg', 'media/posters-03-lowsized.jpeg', 'media/pixel/10x10 cm drukwerk.svg', 'media/logo/10x10 cm logo drukwerk.svg']) {
   assert.deepEqual(await readFile(join(dist, relative)), await readFile(join('public', relative)), 'Original asset changed in output');

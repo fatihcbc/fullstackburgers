@@ -3,25 +3,30 @@ import { getCollection } from 'astro:content';
 import { copy, type Locale } from '../i18n';
 import { formatPrice } from '../config/business';
 import OpeningPricesNotice from './OpeningPricesNotice.astro';
-interface Props { locale: Locale; retro?: boolean; showNotice?: boolean; }
-const { locale, retro = false, showNotice = true } = Astro.props;
+interface Props { locale: Locale; retro?: boolean; showNotice?: boolean; currentMenu?: boolean; }
+const { locale, retro = false, showNotice = true, currentMenu = false } = Astro.props;
 const t = copy[locale];
-const burgers = (await getCollection('burgers', ({ data }) => data.locale === locale && !data.draft && !data.placeholder)).sort((a, b) => a.data.order - b.data.order);
+const burgers = (await getCollection('burgers', ({ data }) => data.locale === locale && !data.draft && !data.placeholder && (currentMenu ? !!data.menu : !data.menuOnly))).sort((a, b) => a.data.order - b.data.order);
 ---
-{showNotice && <OpeningPricesNotice locale={locale} />}
+{showNotice && !currentMenu && <OpeningPricesNotice locale={locale} />}
 <div class={retro ? 'retro-menu-grid' : 'burger-grid'}>{burgers.map(({ data }) => <article class={retro ? 'retro-menu-card' : 'burger-card'}>
   <div class={retro ? undefined : 'card-body'}>
-    <h3>{data.title}</h3><p class="burger-description">{data.description}</p>
-    <dl class="burger-prices">{[
-      { label: t.burger, opening: data.openingPriceCents, standard: data.standardPriceCents },
-      { label: t.combo, opening: data.openingComboPriceCents, standard: data.standardComboPriceCents },
+    <h3>{data.title}</h3><p class="burger-description">{currentMenu ? data.menu!.description : data.description}</p>
+    <dl class="burger-prices">{currentMenu ? [
+      { label: t.burger, price: data.menu!.priceCents },
+      { label: t.combo, price: data.menu!.comboPriceCents },
+    ].map(option => <div class="price-option"><dt>{option.label}</dt><dd>
+      <span class="price-line opening-price"><strong>{formatPrice(option.price, locale)}</strong></span>
+    </dd></div>) : [
+      { label: t.burger, opening: data.openingPriceCents!, standard: data.standardPriceCents! },
+      { label: t.combo, opening: data.openingComboPriceCents!, standard: data.standardComboPriceCents! },
     ].map(option => <div class="price-option"><dt>{option.label}</dt><dd>
       <span class="price-line opening-price"><span>{t.openingPrice}</span><strong>{formatPrice(option.opening, locale)}</strong></span>
       <span class="price-line future-price"><span>{t.futureStandardPrice}</span><span class="price-value">{formatPrice(option.standard, locale)}</span></span>
     </dd></div>)}</dl>
   </div>
 </article>)}</div>
-<p class="combo-note">{t.comboIncludes}</p>
+{!currentMenu && <p class="combo-note">{t.comboIncludes}</p>}
 <style>
   h3 { overflow-wrap: break-word; }
   .burger-description { margin-top: .75rem; }

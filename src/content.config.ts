@@ -13,9 +13,21 @@ const burgers = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/burgers' }),
   schema: z.object({
     ...common, order: z.number().int().default(0),
-    openingPriceCents: z.number().int().positive(), openingComboPriceCents: z.number().int().positive(),
-    standardPriceCents: z.number().int().positive(), standardComboPriceCents: z.number().int().positive(),
-  }).refine(v => v.standardPriceCents >= v.openingPriceCents && v.standardComboPriceCents >= v.openingComboPriceCents, { message: 'Future standard prices must not be lower than opening prices' }),
+    // Preserve historical showcase prices separately from the current menu.
+    openingPriceCents: z.number().int().positive().optional(), openingComboPriceCents: z.number().int().positive().optional(),
+    standardPriceCents: z.number().int().positive().optional(), standardComboPriceCents: z.number().int().positive().optional(),
+    menuOnly: z.boolean().default(false),
+    menu: z.object({
+      description: z.string(),
+      priceCents: z.number().int().positive(),
+      comboPriceCents: z.number().int().positive(),
+    }).optional(),
+  }).refine(v => v.menuOnly
+    ? !!v.menu
+    : v.openingPriceCents !== undefined && v.openingComboPriceCents !== undefined
+      && v.standardPriceCents !== undefined && v.standardComboPriceCents !== undefined
+      && v.standardPriceCents >= v.openingPriceCents && v.standardComboPriceCents >= v.openingComboPriceCents,
+    { message: 'Showcase burgers require historical prices; menu-only burgers require current menu prices' }),
 });
 const announcements = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/announcements' }),
