@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import { copy, type Locale } from '../i18n';
+import { copy, pageUrl, type Locale } from '../i18n';
 import { formatPrice } from '../config/business';
 import { redBullComboSurchargeCents } from '../config/menu';
 import OpeningPricesNotice from './OpeningPricesNotice.astro';
@@ -14,6 +14,7 @@ const burgers = (await getCollection('burgers', ({ data }) => data.locale === lo
 <div class={retro ? 'retro-menu-grid' : 'burger-grid'}>{burgers.map(({ data }) => <article class={retro ? 'retro-menu-card' : 'burger-card'}>
   <div class={retro ? undefined : 'card-body'}>
     <h3>{data.title}</h3><p class="burger-description">{homepage ? (data.menu!.shortDescription ?? data.menu!.description) : currentMenu ? data.menu!.description : data.description}</p>
+    {currentMenu && <p><a class="text-link" href={pageUrl(locale, 'allergens') + (data.translationKey === 'crispy-chicken' ? '#chicken-burger' : '#smash-burgers')} aria-label={t.allergenLink + ': ' + data.title}>{t.allergenLink}</a></p>}
     <dl class="burger-prices">{currentPrices ? [
       { label: t.burger, price: data.menu!.priceCents },
       { label: t.combo, price: data.menu!.comboPriceCents },

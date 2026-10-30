@@ -43,9 +43,9 @@ for (const file of files.filter(file => file.endsWith('.css'))) {
 }
 const prototypePaths = [join(dist, 'design', 'retro', 'index.html'), join(dist, 'en', 'design', 'retro', 'index.html')];
 const pages = files.filter(f => f.endsWith('.html') && !f.endsWith('404.html') && f !== join(dist, 'index.html') && !prototypePaths.includes(f));
-assert.equal(pages.length, 8, 'Expected four pages in both languages after Ingredients removal');
+assert.equal(pages.length, 10, 'Expected five public pages in both languages');
 const titles = new Set(); const descriptions = new Set();
-const routePairs = [['', ''], ['menu/', 'menu/'], ['over-ons/', 'about/'], ['locaties-evenementen/', 'locations-events/']];
+const routePairs = [['', ''], ['menu/', 'menu/'], ['over-ons/', 'about/'], ['locaties-evenementen/', 'locations-events/'], ['allergenen/', 'allergens/']];
 for (const pair of routePairs) {
   for (const [index, locale] of ['nl', 'en'].entries()) {
     const html = await readFile(join(dist, locale, pair[index], 'index.html'), 'utf8');
@@ -83,7 +83,7 @@ for (const file of pages) {
   assert(!/<script\b[^>]*src=/.test(html), 'Phase 1 should ship no client JavaScript');
 }
 const sitemap = await readFile(join(dist, 'sitemap.xml'), 'utf8');
-assert.equal((sitemap.match(/<loc>/g) ?? []).length, deployment.staging ? 0 : 8);
+assert.equal((sitemap.match(/<loc>/g) ?? []).length, deployment.staging ? 0 : 10);
 const robots = await readFile(join(dist, 'robots.txt'), 'utf8');
 assert.equal(robots, 'User-agent: *\nAllow: /\n' + (deployment.staging ? '' : 'Sitemap: ' + deployment.url + '/sitemap.xml\n'));
 assert.equal((await readFile('CNAME', 'utf8')).trim(), 'www.fullstackburgers.nl');
@@ -312,4 +312,5 @@ if (deployment.staging) {
   assert.deepEqual(headerRules.map(rule => rule.pattern), ['https://:project.pages.dev/*', 'https://:version.:project.pages.dev/*'], 'Production must have only hostname-specific Pages rules');
   for (const loc of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)) assert(loc[1].startsWith(deployment.url + '/'));
 }
-console.log('Verified ' + deployment.environment + ': 8 localized pages, root/404 and 2 prototype pages; official menu/prices, locations/maps, original images/mascot, removed Ingredients routes, fonts, SEO, noindex, sitemap, robots, headers and CNAME.');
+await import('./verify-allergens.mjs');
+console.log('Verified ' + deployment.environment + ': 10 localized pages, root/404 and 2 prototype pages; allergen pages/anchors, official menu/prices, locations/maps, original images/mascot, removed Ingredients routes, fonts, SEO, noindex, sitemap, robots, headers and CNAME.');

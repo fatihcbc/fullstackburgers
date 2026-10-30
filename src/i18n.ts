@@ -1,26 +1,31 @@
 export const locales = ['nl', 'en'] as const;
 export type Locale = typeof locales[number];
-export const pages = ['home', 'menu', 'about', 'locations'] as const;
+export const pages = ['home', 'menu', 'about', 'locations', 'allergens'] as const;
 export type Page = typeof pages[number];
 const slugs = {
-  nl: { home: '', menu: 'menu', about: 'over-ons', locations: 'locaties-evenementen' },
-  en: { home: '', menu: 'menu', about: 'about', locations: 'locations-events' },
+  nl: { home: '', menu: 'menu', about: 'over-ons', locations: 'locaties-evenementen', allergens: 'allergenen' },
+  en: { home: '', menu: 'menu', about: 'about', locations: 'locations-events', allergens: 'allergens' },
 };
 export function pageUrl(locale: Locale, page: Page) { return '/' + locale + '/' + (slugs[locale][page] ? slugs[locale][page] + '/' : ''); }
 export const copy = {
   nl: {
-    nav: { home: 'Home', menu: 'Menu', about: 'Over ons', locations: 'Locaties' },
+    nav: { home: 'Home', menu: 'Menu', about: 'Over ons', locations: 'Locaties', allergens: 'Allergenen' },
     titles: {
       home: 'Smashburgers in Almere', menu: 'Smashburger menu in Almere',
       about: 'Over onze foodtruck in Almere', locations: 'Foodtruck in Almere: Muziekwijk en Poort',
+      allergens: 'Allergeneninformatie',
     },
     descriptions: {
       home: 'Fullstack Burgers: smashburgers uit Almere. Bekijk ons menu en vind onze foodtruck in Muziekwijk en Almere Poort.',
       menu: 'Bekijk ons menu in Almere: smashburgers, Crispy Chicken Burger, kipsnacks, friet en frisdrank. Alle actuele burger- en comboprijzen op een rij.',
       about: 'Fullstack Burgers is een foodtruck uit Almere, gespecialiseerd in smashburgers. Maak kennis met ons.',
+      allergens: 'Bekijk bekende allergenen en nog te bevestigen productinformatie van Fullstack Burgers. Meld een allergie of intolerantie vóór het bestellen bij ons personeel.',
       locations: 'Smashburgers in Almere: vind onze foodtruck op zondag in Muziekwijk en op maandag op het Homerusplein in Almere Poort.',
     },
     skip: 'Ga naar inhoud', preview: 'Staging · website in ontwikkeling',
+    allergenIntro: 'Bekende allergenen per product, informatie die nog moet worden bevestigd en het risico op kruiscontact.',
+    allergenLink: 'Allergeneninformatie',
+    allergenSauces: 'sauzen',
     eyebrow: 'Fullstack Burgers / Almere', hero: 'Smashburgers\nuit Almere',
     intro: 'Fullstack Burgers is een foodtruck uit Almere, gespecialiseerd in smashburgers. Bekijk ons menu en ontdek waar je ons vindt.',
     menuCta: 'Bekijk het menu', locationCta: 'Vind onze foodtruck',
@@ -52,18 +57,23 @@ export const copy = {
     truckAlt: 'De originele Fullstack Burgers-foodtruck met gele belettering en pixelpatronen, volledig in beeld.',
   },
   en: {
-    nav: { home: 'Home', menu: 'Menu', about: 'About Us', locations: 'Locations' },
+    nav: { home: 'Home', menu: 'Menu', about: 'About Us', locations: 'Locations', allergens: 'Allergens' },
     titles: {
       home: 'Smash burgers in Almere', menu: 'Smash burger menu in Almere',
       about: 'About our food truck in Almere', locations: 'Food truck in Almere: Muziekwijk and Poort',
+      allergens: 'Allergen information',
     },
     descriptions: {
       home: 'Fullstack Burgers is an Almere-based smash burger food truck. Explore our menu and find us in Muziekwijk and Almere Poort.',
       menu: 'Explore our menu in Almere: smash burgers, Crispy Chicken Burger, chicken snacks, fries and soft drinks. See all current burger and combo prices.',
       about: 'Meet Fullstack Burgers, an Almere-based food truck specializing in smash burgers.',
+      allergens: 'Read known allergens and pending product information for Fullstack Burgers. Tell our staff about allergies or intolerances before ordering.',
       locations: 'Smash burgers in Almere: find our food truck in Muziekwijk on Sundays and at Homerusplein in Almere Poort on Mondays.',
     },
     skip: 'Skip to content', preview: 'Staging · website in development',
+    allergenIntro: 'Known ingredient allergens, information still awaiting confirmation and the risk of cross-contact.',
+    allergenLink: 'Allergen information',
+    allergenSauces: 'sauces',
     eyebrow: 'Fullstack Burgers / Almere', hero: 'Smash burgers.\nBased in Almere.',
     intro: 'Fullstack Burgers is an Almere-based smash burger food truck. Explore our menu and discover where to find us.',
     menuCta: 'Explore the menu', locationCta: 'Find our food truck',

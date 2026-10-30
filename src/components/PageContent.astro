@@ -4,13 +4,15 @@ import Home from './Home.astro';
 import TruckPhoto from './TruckPhoto.astro';
 import Menu from './Menu.astro';
 import Locations from './Locations.astro';
+import Allergens from './Allergens.astro';
 interface Props { locale: Locale; page: Page; }
 const { locale, page } = Astro.props; const t = copy[locale];
-const intros = { home: t.intro, menu: t.menuIntro, about: t.aboutIntro, locations: t.locationsIntro };
+const intros = { home: t.intro, menu: t.menuIntro, about: t.aboutIntro, locations: t.locationsIntro, allergens: t.allergenIntro };
 ---
 {page === 'home' ? <Home locale={locale} /> : <>
   <section class="page-heading wrapper"><p class="eyebrow">Fullstack Burgers / Almere</p><h1>{page === 'locations' ? t.locationsHeading : page === 'about' ? t.aboutHeading : t.nav[page]}</h1><p class="intro">{intros[page]}</p></section>
   {page === 'menu' && <Menu locale={locale} />}
+  {page === 'allergens' && <Allergens locale={locale} />}
   {page === 'about' && <section class="section wrapper split" aria-labelledby="about-story"><TruckPhoto locale={locale} /><div><h2 id="about-story">{t.aboutDetail}</h2><p>{t.aboutBody}</p><p class="prose"><a class="text-link" href={pageUrl(locale, 'menu')}>{t.aboutMenuLink}</a> {t.linkAnd} <a class="text-link" href={pageUrl(locale, 'locations')}>{t.aboutLocationsLink}</a>.</p></div></section>}
   {page === 'locations' && <section class="section wrapper" aria-labelledby="locations-title"><h2 id="locations-title">{t.locationsTitle}</h2><Locations locale={locale} /><p class="prose"><a class="text-link" href={pageUrl(locale, 'menu')}>{t.locationsMenuLink}</a></p></section>}
 </>}
