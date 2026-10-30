@@ -4,7 +4,7 @@ import poster from '../../public/media/posters-03-lowsized.jpeg';
 import BurgerGrid from './BurgerGrid.astro';
 import { sides, formatPrice } from '../config/business';
 import { chickenSnacks, drinks, redBullComboSurchargeCents } from '../config/menu';
-import { copy, type Locale } from '../i18n';
+import { copy, pageUrl, type Locale } from '../i18n';
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const t = copy[locale];
@@ -27,6 +27,7 @@ const t = copy[locale];
         {drinks.map(drink => <div><dt>{drink.name}{'detail' in drink && <span class="portion"> ({drink.detail[locale]})</span>}</dt><dd>{formatPrice(drink.priceCents, locale)}</dd></div>)}
       </dl>
     </section>
+    <p class="prose"><a class="text-link" href={pageUrl(locale, 'locations')}>{t.menuLocationsLink}</a></p>
   </div>
 </section>
 <style>

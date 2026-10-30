@@ -9,7 +9,7 @@ const slugs = {
 export function pageUrl(locale: Locale, page: Page) { return '/' + locale + '/' + (slugs[locale][page] ? slugs[locale][page] + '/' : ''); }
 export const copy = {
   nl: {
-    nav: { home: 'Home', menu: 'Menu', about: 'Over ons', locations: 'Locaties' },
+    nav: { home: 'Home', menu: 'Menu', about: 'Over ons', locations: 'Locaties & evenementen' },
     titles: {
       home: 'Smashburgers in Almere', menu: 'Smashburger menu in Almere',
       about: 'Over onze foodtruck in Almere', locations: 'Foodtruck in Almere: Muziekwijk en Poort',
@@ -40,15 +40,20 @@ export const copy = {
     sidesTitle: 'Friet & frisdrank', posterTitle: 'Onze menuposter', posterOpen: 'Open de originele menuposter op volledige grootte',
     posterAlt: 'Officiële Fullstack Burgers-menuposter. De producten en prijzen staan ook als tekst op deze pagina.',
     aboutIntro: 'Fullstack Burgers is een foodtruck uit Almere, gespecialiseerd in smashburgers.',
+    aboutHeading: 'Over Fullstack Burgers',
+    aboutMenuLink: 'Bekijk ons burgermenu', aboutLocationsLink: 'vind onze foodtruck in Almere', linkAnd: 'en',
+    menuLocationsLink: 'Vind onze foodtruck in Muziekwijk en Almere Poort',
+    locationsMenuLink: 'Bekijk onze burgers, combo’s en prijzen',
     aboutDetail: 'Smashburgers, vanuit Almere',
     aboutBody: 'Met onze foodtruck staan we op zondag in Almere Muziekwijk en op maandag op het Homerusplein in Almere Poort. Op het menu: Single, Double en Triple Smash Burgers, friet en frisdrank.',
-    locationsHeading: 'Onze foodtruck in Almere',
+    locationsHeading: 'Locaties & evenementen in Almere',
+    eventsTitle: 'Evenementen', eventsNote: 'Er staan op dit moment geen evenementen op deze pagina vermeld.',
     locationsIntro: 'Smashburgers in Almere, vanuit onze foodtruck. Op zondag staan we in Almere Muziekwijk. Op maandag vind je onze smashburger-foodtruck op het Homerusplein in Almere Poort.',
     locationsTitle: 'Hier vind je ons', maps: 'Route bekijken', newTab: 'opent in een nieuw tabblad',
     truckAlt: 'De originele Fullstack Burgers-foodtruck met gele belettering en pixelpatronen, volledig in beeld.',
   },
   en: {
-    nav: { home: 'Home', menu: 'Menu', about: 'About', locations: 'Locations' },
+    nav: { home: 'Home', menu: 'Menu', about: 'About Us', locations: 'Locations & Events' },
     titles: {
       home: 'Smash burgers in Almere', menu: 'Smash burger menu in Almere',
       about: 'About our food truck in Almere', locations: 'Food truck in Almere: Muziekwijk and Poort',
@@ -79,9 +84,14 @@ export const copy = {
     sidesTitle: 'Fries & soft drinks', posterTitle: 'Our menu poster', posterOpen: 'Open the original full-size menu poster',
     posterAlt: 'Official Fullstack Burgers menu poster. All products and prices are also available as text on this page.',
     aboutIntro: 'Fullstack Burgers is an Almere-based food truck specializing in smash burgers.',
+    aboutHeading: 'About Fullstack Burgers',
+    aboutMenuLink: 'Explore our burger menu', aboutLocationsLink: 'find our food truck in Almere', linkAnd: 'and',
+    menuLocationsLink: 'Find our food truck in Muziekwijk and Almere Poort',
+    locationsMenuLink: 'Explore our burgers, combos and prices',
     aboutDetail: 'Smash burgers, based in Almere',
     aboutBody: 'Find our food truck in Almere Muziekwijk on Sundays and at Homerusplein in Almere Poort on Mondays. On the menu: Single, Double and Triple Smash Burgers, fries and soft drinks.',
-    locationsHeading: 'Our food truck in Almere',
+    locationsHeading: 'Locations & Events in Almere',
+    eventsTitle: 'Events', eventsNote: 'There are currently no events listed on this page.',
     locationsIntro: 'Smash burgers in Almere, served from our food truck. Find us in Almere Muziekwijk on Sundays. On Mondays, our smash burger food truck is at Homerusplein in Almere Poort.',
     locationsTitle: 'Where to find us', maps: 'Get directions', newTab: 'opens in a new tab',
     truckAlt: 'The original Fullstack Burgers food truck with yellow lettering and pixel patterns, shown in full.',

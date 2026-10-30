@@ -142,7 +142,7 @@ for (const locale of ['nl', 'en']) {
   const menu = await readFile(join(dist, locale, 'menu/index.html'), 'utf8');
   const locationPath = locale === 'nl' ? 'locaties-evenementen' : 'locations-events';
   const locations = await readFile(join(dist, locale, locationPath, 'index.html'), 'utf8');
-  assert(locations.includes(locale === 'nl' ? '>Onze foodtruck in Almere</h1>' : '>Our food truck in Almere</h1>'), 'Missing localized location heading');
+  assert(locations.includes(locale === 'nl' ? '>Locaties &amp; evenementen in Almere</h1>' : '>Locations &amp; Events in Almere</h1>'), 'Missing localized location heading');
   assert(locations.includes(locale === 'nl' ? 'Op maandag vind je onze smashburger-foodtruck op het Homerusplein in Almere Poort.' : 'On Mondays, our smash burger food truck is at Homerusplein in Almere Poort.'), 'Missing confirmed Monday location copy');
   assert(home.includes('/media/pixel/10x10%20cm%20drukwerk.svg'), 'Missing original mascot');
   assert(home.includes('truck-2.') && home.includes('type="image/webp"') && home.includes('fetchpriority="high"'), 'Missing optimized original truck hero');
