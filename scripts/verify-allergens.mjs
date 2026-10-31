@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
 import { allergenCategories, ingredients, productGroups, declaredAllergens, productIngredients, productAllergenState } from '../src/config/allergens.ts';
+import { verifiedIngredients } from './fixtures/verified-ingredients.mjs';
 
 const categories = ['gluten', 'crustaceans', 'egg', 'fish', 'peanuts', 'soy', 'milk', 'nuts', 'celery', 'mustard', 'sesame', 'sulphites', 'lupin', 'molluscs'];
 assert.deepEqual(allergenCategories.map(category => category.id), categories);
@@ -23,15 +24,25 @@ const declaredProducts = {
   'classic-chicken-strips': ['gluten'], 'spicy-chicken-strips': ['gluten', 'egg'],
   'hot-wings': [], 'fries-profile': [],
   'house-burger-sauce': ['gluten', 'egg', 'fish', 'soy', 'mustard'],
-  'honey-mustard-mayo': ['egg', 'mustard'], 'aioli': ['egg'], 'fritessaus': ['egg', 'mustard'], 'mustard': ['mustard'], 'ketchup': [],
+  'honey-mustard-mayo': ['egg', 'mustard'], 'aioli': ['egg'], 'mayonnaise': ['egg', 'mustard'], 'mustard': ['mustard'], 'ketchup': [],
 };
 for (const [id, expected] of Object.entries(declaredProducts)) {
   assert.deepEqual(sorted(categories.filter(category => productAllergenState(product(id), category) === 'contains')), sorted(expected), 'Changed confirmed allergens: ' + id);
-  for (const category of categories.filter(category => !expected.includes(category))) assert.equal(productAllergenState(product(id), category), id === 'fries-profile' ? 'notIdentified' : 'unavailable', 'Missing data must not imply absence: ' + id);
+  const reviewedProducts = ['fries-profile', 'mayonnaise', 'aioli', 'mustard', 'ketchup'];
+  for (const category of categories.filter(category => !expected.includes(category))) assert.equal(productAllergenState(product(id), category), reviewedProducts.includes(id) ? 'notIdentified' : 'unavailable', 'Missing data must not imply absence: ' + id);
 }
 for (const item of products) { assert(productIngredients(item).length); for (const entry of item.recipe) assert(ingredients[entry.ingredient]); }
 assert(!productIngredients(product('chicken-original')).includes('brioche'), 'Do not assume an unconfirmed chicken bun supplier');
-assert.equal(ingredients.cheddar.reviewed, false, 'Do not infer an unprovided cheese specification');
+assert(!('fritessaus' in ingredients) && !products.some(item => item.id === 'fritessaus'), 'Unused Fritessaus must not remain active');
+assert.equal(Object.keys(verifiedIngredients).length, 9);
+for (const [id, expected] of Object.entries(verifiedIngredients)) {
+  assert.equal(ingredients[id].reviewed, true);
+  assert(ingredients[id].supplier, 'Keep internal supplier traceability: ' + id);
+  assert.deepEqual(sorted(declaredAllergens(id)), expected.allergens, 'Wrong verified ingredient allergens: ' + id);
+  for (const locale of ['nl', 'en']) assert.equal(ingredients[id].composition.map(part => part.text[locale]).join(''), expected[locale], 'Incomplete or changed declaration: ' + id + '/' + locale);
+}
+assert.equal(ingredients.aioli.supplier, 'BRESC Aioli Clasico 1 kg', 'Keep the verified 1 kg formulation');
+for (const id of ['beef', 'onion', 'pickles', 'friedOnions', 'houseSauce', 'worcestershire', 'kikkoman', 'honeyMayo', 'chickenFillet', 'chickenBun', 'coleslaw', 'classicStrips', 'spicyStrips', 'wings']) assert.equal(ingredients[id].reviewed, false, 'Do not upgrade unrelated verification status: ' + id);
 const component = await readFile('src/components/Allergens.astro', 'utf8');
 assert(/\.matrix-scroll\s*\{[^}]*overflow-x:\s*auto/.test(component), 'Matrix must scroll horizontally');
 assert(/\.product-name\s*\{[^}]*position:\s*sticky;\s*left:\s*0/.test(component), 'Product names must remain visible while scrolling');
@@ -49,6 +60,20 @@ for (const locale of ['nl', 'en']) {
   assert.equal(new Set(ids).size, ids.length, 'Allergen IDs must be unique');
   for (const id of ['allergen-overview', 'ingredients-guide', 'important-information', 'smash-burger-profile', ...productGroups.map(group => group.id)]) assert(ids.includes(id), 'Missing section/legacy anchor: ' + id);
   for (const item of products) for (const id of [item.id, 'ingredients-' + item.id]) assert(ids.includes(id), 'Missing product anchor: ' + id);
+  for (const brand of ['METRO Chef', 'BRESC', 'Marne', 'Kikkoman', 'Family Chicken']) assert(!html.includes(brand), 'Supplier branding leaked into public guide: ' + brand);
+  assert(!/fritessaus/i.test(html), 'Unused Fritessaus must not appear in the public guide');
+  for (const id of Object.keys(verifiedIngredients)) {
+    const disclosures = [...html.matchAll(/<details\b[^>]*data-ingredient="([^"]+)"[^>]*>([\s\S]*?)<\/details>/g)].filter(match => match[1] === id);
+    assert(disclosures.length > 0, 'Verified declaration is not publicly visible: ' + id);
+    for (const disclosure of disclosures) {
+      assert(!disclosure[2].includes(locale === 'nl' ? 'Volledige ingrediëntenlijst niet beschikbaar' : 'Complete ingredient list unavailable'), 'Verified ingredient marked unavailable: ' + id);
+      const composition = disclosure[2].match(/<span\b[^>]*class="label"[^>]*>[^<]*<\/span>\s*([\s\S]*?)<\/p>/)?.[1];
+      assert.equal(composition?.replace(/<[^>]*>/g, '').replaceAll('&#39;', "'").replaceAll('&amp;', '&'), verifiedIngredients[id][locale], 'Rendered declaration is incomplete: ' + id);
+      assert(disclosure[2].includes(ingredients[id].name[locale]), 'Wrong public ingredient label: ' + id);
+      if (verifiedIngredients[id].allergens.length) assert(/<strong\b/.test(composition), 'Declared allergens must be highlighted: ' + id);
+    }
+  }
+  assert(html.includes(locale === 'nl' ? 'Bevat een bron van fenylalanine.' : 'Contains a source of phenylalanine.'), 'Ketchup needs its phenylalanine warning');
   const table = html.match(/<table\b[^>]*>([\s\S]*?)<\/table>/)?.[1];
   assert(table && table.includes('<caption'), 'Matrix must have a caption');
   assert.equal((table.match(/scope="col"/g) ?? []).length, 15, 'Product plus all 14 allergen headings');
@@ -70,7 +95,7 @@ for (const locale of ['nl', 'en']) {
   assert.equal((html.match(/<details\b/g) ?? []).length, (html.match(/<summary\b/g) ?? []).length);
   assert(/<strong\b[^>]*>(TARWEbloem|WHEAT flour)<\/strong>/.test(html));
   assert(new RegExp('<strong\\b[^>]*>' + (locale === 'nl' ? 'geroosterd gemout roggemeel' : 'roasted malted RYE flour') + '<\\/strong>').test(html));
-  for (const name of ['Worcestershire sauce', 'Kikkoman soy sauce', 'Family Chicken Crunchy Filetburger Original']) assert(html.includes(name));
+  for (const name of (locale === 'nl' ? ['Worcestersaus', 'Sojasaus', 'Krokante kipfilet (Original)'] : ['Worcestershire sauce', 'Soy sauce', 'Crunchy chicken fillet (Original)'])) assert(html.includes(name));
   const notice = html.match(/<aside\b[^>]*>([\s\S]*?)<\/aside>/)?.[1];
   assert(notice?.includes(locale === 'nl' ? 'vóór het bestellen bij ons personeel' : 'our staff about allergies or intolerances before ordering'));
   assert(notice.includes(locale === 'nl' ? 'niet volledig worden uitgesloten' : 'cannot be completely excluded'));
