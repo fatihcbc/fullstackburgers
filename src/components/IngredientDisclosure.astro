@@ -1,0 +1,30 @@
+---
+import { ingredients, declaredAllergens, allergenCategories, allergenCopy } from '../config/allergens';
+import type { Locale } from '../i18n';
+interface Props { ingredientId: string; locale: Locale; quantity?: number; }
+const { ingredientId, locale, quantity } = Astro.props;
+const ingredient = ingredients[ingredientId];
+const declared = declaredAllergens(ingredientId);
+const t = allergenCopy[locale];
+---
+<details class="ingredient-detail" data-ingredient={ingredientId}>
+  <summary>{ingredient.name[locale]}{quantity && <small> · {t.quantity}: {quantity}</small>}</summary>
+  <div class="ingredient-body">
+    {ingredient.composition ? <p><span class="label">{t.composition}:</span> {ingredient.composition.map(part => part.allergens?.length ? <strong>{part.text[locale]}</strong> : part.text[locale])}</p> : <p class="unavailable-note"><span class="unknown-symbol" aria-hidden="true">?</span> {t.ingredientUnavailable}</p>}
+    {declared.length > 0 && <p><span class="label">{t.declared}:</span> {allergenCategories.filter(category => declared.includes(category.id)).map((category, index) => <>{index > 0 && ', '}<strong>{category.name[locale]}</strong></>)}</p>}
+    {ingredient.note && <p>{ingredient.note[locale]}</p>}
+    {ingredient.components?.map(child => <Astro.self ingredientId={child} locale={locale} />)}
+  </div>
+</details>
+<style>
+  .ingredient-detail { border: 1px solid #ccc; margin-top: .6rem; background: #fff; color: var(--brand-black); }
+  summary { min-height: 44px; padding: .85rem 1rem; cursor: pointer; font-weight: 700; overflow-wrap: anywhere; }
+  summary::marker { color: var(--brand-black); }
+  small { font-weight: 400; }
+  .ingredient-body { padding: 0 1rem 1rem; overflow-wrap: anywhere; }
+  .label { display: block; font-weight: 700; margin-bottom: .25rem; }
+  .unavailable-note { color: #444; }
+  .unknown-symbol { display: inline-block; padding: 0 .4rem; border: 1px solid #777; font-weight: 800; }
+  strong { font-weight: 800; }
+  summary:focus-visible { outline: 3px solid var(--brand-black); outline-offset: -4px; }
+</style>
