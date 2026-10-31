@@ -13,7 +13,7 @@ const sorted = values => [...values].sort();
 assert.deepEqual(sorted(declaredAllergens('brioche')), ['egg', 'gluten', 'milk']);
 assert.deepEqual(sorted(declaredAllergens('houseSauce')), ['egg', 'fish', 'gluten', 'mustard', 'soy']);
 assert.deepEqual(sorted(declaredAllergens('worcestershire')), ['fish', 'gluten']);
-assert.deepEqual(sorted(declaredAllergens('kikkoman')), ['gluten', 'soy']);
+assert.deepEqual(sorted(declaredAllergens('soySauce')), ['gluten', 'soy']);
 const exactBun = 'TARWEbloem, water, suiker, koolzaadolie, volle MELKpoeder, hele eieren, TARWEgluten, zout, gist, natuurlijk aroma, gedeactiveerde gist, MELKeiwit, geroosterd gemout roggemeel.';
 assert.equal(ingredients.brioche.composition.map(part => part.text.nl).join(''), exactBun, 'Preserve the confirmed bun composition exactly');
 const declaredProducts = {
@@ -42,7 +42,7 @@ for (const [id, expected] of Object.entries(verifiedIngredients)) {
   for (const locale of ['nl', 'en']) assert.equal(ingredients[id].composition.map(part => part.text[locale]).join(''), expected[locale], 'Incomplete or changed declaration: ' + id + '/' + locale);
 }
 assert.equal(ingredients.aioli.supplier, 'BRESC Aioli Clasico 1 kg', 'Keep the verified 1 kg formulation');
-for (const id of ['beef', 'onion', 'pickles', 'friedOnions', 'houseSauce', 'worcestershire', 'kikkoman', 'honeyMayo', 'chickenFillet', 'chickenBun', 'coleslaw', 'classicStrips', 'spicyStrips', 'wings']) assert.equal(ingredients[id].reviewed, false, 'Do not upgrade unrelated verification status: ' + id);
+for (const id of ['beef', 'onion', 'pickles', 'friedOnions', 'houseSauce', 'worcestershire', 'soySauce', 'honeyMayo', 'chickenFillet', 'chickenBun', 'coleslaw', 'classicStrips', 'spicyStrips', 'wings']) assert.equal(ingredients[id].reviewed, false, 'Do not upgrade unrelated verification status: ' + id);
 const component = await readFile('src/components/Allergens.astro', 'utf8');
 assert(/\.matrix-scroll\s*\{[^}]*overflow-x:\s*auto/.test(component), 'Matrix must scroll horizontally');
 assert(/\.product-name\s*\{[^}]*position:\s*sticky;\s*left:\s*0/.test(component), 'Product names must remain visible while scrolling');
@@ -60,7 +60,7 @@ for (const locale of ['nl', 'en']) {
   assert.equal(new Set(ids).size, ids.length, 'Allergen IDs must be unique');
   for (const id of ['allergen-overview', 'ingredients-guide', 'important-information', 'smash-burger-profile', ...productGroups.map(group => group.id)]) assert(ids.includes(id), 'Missing section/legacy anchor: ' + id);
   for (const item of products) for (const id of [item.id, 'ingredients-' + item.id]) assert(ids.includes(id), 'Missing product anchor: ' + id);
-  for (const brand of ['METRO Chef', 'BRESC', 'Marne', 'Kikkoman', 'Family Chicken']) assert(!html.includes(brand), 'Supplier branding leaked into public guide: ' + brand);
+  for (const brand of ['METRO Chef', 'BRESC', 'Marne', 'Kikkoman', 'Family Chicken']) assert(!html.toLowerCase().includes(brand.toLowerCase()), 'Supplier branding leaked into public guide: ' + brand);
   assert(!/fritessaus/i.test(html), 'Unused Fritessaus must not appear in the public guide');
   for (const id of Object.keys(verifiedIngredients)) {
     const disclosures = [...html.matchAll(/<details\b[^>]*data-ingredient="([^"]+)"[^>]*>([\s\S]*?)<\/details>/g)].filter(match => match[1] === id);

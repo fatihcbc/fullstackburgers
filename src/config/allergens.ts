@@ -66,14 +66,14 @@ export const ingredients: Record<string, Ingredient> = {
   friedOnions: { name: { nl: 'Krokant gebakken uitjes', en: 'Crispy fried onions' }, declared: [], reviewed: false },
   houseSauce: {
     name: both('House Burger Sauce'), declared: ['egg', 'mustard'], reviewed: false,
-    components: ['worcestershire', 'kikkoman'],
+    components: ['worcestershire', 'soySauce'],
     note: { nl: 'Eigen recept. Ei en mosterd zijn eerder bevestigd; de overige hieronder genoemde allergenen komen uit worcestersaus en sojasaus. Dit is geen volledige ingrediëntenlijst.', en: 'Our own recipe. Egg and mustard were previously confirmed; the other allergens below come from Worcestershire sauce and soy sauce. This is not a complete ingredient list.' },
   },
   worcestershire: {
     name: { nl: 'Worcestersaus', en: 'Worcestershire sauce' }, declared: ['gluten', 'fish'], reviewed: false,
     note: { nl: 'Bevestigd: gluten uit gerst en vis.', en: 'Confirmed: barley gluten and fish.' },
   },
-  kikkoman: {
+  soySauce: {
     name: { nl: 'Sojasaus', en: 'Soy sauce' }, supplier: 'Kikkoman soy sauce', declared: ['gluten', 'soy'], reviewed: false,
     note: { nl: 'Bevestigd: gluten uit tarwe en soja.', en: 'Confirmed: wheat gluten and soy.' },
   },
